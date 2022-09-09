@@ -15,7 +15,7 @@ public class PickableAwake {
   static int SpawnOffset = "override_spawn_offset".GetStableHashCode();
   // float (meters)
   static int UseEffect = "override_use_effect".GetStableHashCode();
-  // prefab|flags|variant|childTransform,prefab|flags|variant|childTransform,...
+  // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
   static void SetSpawn(Pickable obj) =>
     Helper.Prefab(obj.m_nview, Spawn, value => obj.m_itemPrefab = value);
   static void SetRespawn(Pickable obj) =>

@@ -21,7 +21,7 @@ public class CreatureSpawnerAwake {
   static int TriggerNoise = "override_trigger_noise".GetStableHashCode();
   // float (meters)
   static int SpawnEffect = "override_spawn_effect".GetStableHashCode();
-  // prefab|flags|variant|childTransform,prefab|flags|variant|childTransform,...
+  // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
   static void HandleSpawn(CreatureSpawner obj) {
     var hash = obj.m_nview.GetZDO().GetInt(Spawn, 0);
     if (hash == 0) return;

@@ -28,7 +28,7 @@ public class Helper {
     return prefab;
   }
   public static EffectList.EffectData? ParseEffect(string data) {
-    var split = data.Split('|');
+    var split = data.Split(',');
     EffectList.EffectData effect = new();
     effect.m_prefab = GetPrefab(split[0]);
     if (effect.m_prefab == null) return null;
@@ -46,13 +46,13 @@ public class Helper {
     return effect;
   }
   public static EffectList ParseEffects(string data) {
-    var effects = data.Split(',').Select(effect => ParseEffect(effect)!).Where(effect => effect != null);
+    var effects = data.Split('|').Select(effect => ParseEffect(effect)!).Where(effect => effect != null);
     EffectList list = new();
     list.m_effectPrefabs = effects.ToArray();
     return list;
   }
   public static SpawnArea.SpawnData? ParseSpawnData(string data) {
-    var split = data.Split('|');
+    var split = data.Split(',');
     SpawnArea.SpawnData spawn = new();
     spawn.m_prefab = GetPrefab(split[0]);
     if (spawn.m_prefab == null) return null;
@@ -67,7 +67,7 @@ public class Helper {
     return spawn;
   }
   public static List<SpawnArea.SpawnData> ParseSpawnsData(string data) {
-    var spawns = data.Split(',').Select(spawn => ParseSpawnData(spawn)!).Where(spawn => spawn != null);
+    var spawns = data.Split('|').Select(spawn => ParseSpawnData(spawn)!).Where(spawn => spawn != null);
     return spawns.ToList();
   }
 
@@ -88,7 +88,7 @@ public class Helper {
   }
   public static void Prefab(ZNetView view, int hash, Action<GameObject> action) {
     var value = view.GetZDO().GetInt(hash, 0);
-    var prefab = Helper.GetPrefab(hash);
+    var prefab = Helper.GetPrefab(value);
     if (prefab == null) return;
     action(prefab);
   }

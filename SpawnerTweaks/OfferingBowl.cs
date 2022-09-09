@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using HarmonyLib;
 using UnityEngine;
 
@@ -11,18 +13,18 @@ public class OfferingBowlAwake {
   static int Amount = "override_amount".GetStableHashCode();
   // int
   static int StartEffect = "override_start_effect".GetStableHashCode();
-  // prefab|flags|variant|childTransform,prefab|flags|variant|childTransform,...
+  // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
   static int SpawnEffect = "override_spawn_effect".GetStableHashCode();
-  // prefab|flags|variant|childTransform,prefab|flags|variant|childTransform,...
+  // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
   static int UseEffect = "override_use_effect".GetStableHashCode();
-  // prefab|flags|variant|childTransform,prefab|flags|variant|childTransform,...
+  // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
   static int Name = "override_name".GetStableHashCode();
   // string
   static int Text = "override_text".GetStableHashCode();
   // string
   static int Delay = "override_delay".GetStableHashCode();
   // float (seconds)
-  static int Position = "override_position".GetStableHashCode();
+  static int ItemOffset = "override_item_offset".GetStableHashCode();
   // float,float,float (x,z,y)
   static int SpawnOffset = "override_spawn_offset".GetStableHashCode();
   // float (meters)
@@ -82,8 +84,8 @@ public class OfferingBowlAwake {
     Helper.Float(view, SpawnRadius, value => obj.m_spawnBossMaxDistance = value);
   static void SetSpawnMaxY(OfferingBowl obj, ZNetView view) =>
     Helper.Float(view, SpawnMaxY, value => obj.m_spawnBossMaxYDistance = value);
-  static void SetPosition(OfferingBowl obj, ZNetView view) =>
-    Helper.String(view, Position, value => {
+  static void SetItemOffset(OfferingBowl obj, ZNetView view) =>
+    Helper.String(view, ItemOffset, value => {
       var split = value.Split(',');
       var pos = obj.m_itemSpawnPoint.localPosition;
       pos.x = Helper.Float(split[0]);
@@ -103,6 +105,8 @@ public class OfferingBowlAwake {
     if (obj.m_itemSpawnPoint) return;
     GameObject spawnPoint = new();
     spawnPoint.transform.parent = obj.transform;
+    spawnPoint.transform.localPosition = Vector3.zero;
+    spawnPoint.transform.localRotation = Quaternion.identity;
     obj.m_itemSpawnPoint = spawnPoint.transform;
 
   }
@@ -120,12 +124,67 @@ public class OfferingBowlAwake {
     SetItemStandRange(__instance, view);
     SetGlobalKey(__instance, view);
     SetDelay(__instance, view);
-    SetPosition(__instance, view);
+    SetItemOffset(__instance, view);
     SetSpawnRadius(__instance, view);
     SetSpawnMaxY(__instance, view);
     SetSpawnOffset(__instance, view);
     SetStartEffect(__instance, view);
     SetSpawnEffect(__instance, view);
     SetUseEffect(__instance, view);
+  }
+}
+
+[HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.Interact))]
+public class OfferingBowlInteract {
+  static int UniqueKey = "override_uniquekey".GetStableHashCode();
+  // string
+
+  static bool Prefix(OfferingBowl __instance) {
+    var view = __instance.GetComponent<ZNetView>();
+    var ret = true;
+    Helper.String(view, UniqueKey, value => {
+      ret = KeyUtils.MissingAllUniques(value);
+    });
+    if (ret && __instance.m_setGlobalKey != "") {
+      ret = KeyUtils.MissingAllGlobalKeys(__instance.m_setGlobalKey);
+    }
+    return ret;
+  }
+  static void Postfix(OfferingBowl __instance, bool __result) {
+    if (!__result) return;
+    if (!string.IsNullOrEmpty(__instance.m_setGlobalKey))
+      ZoneSystem.instance.SetGlobalKey(__instance.m_setGlobalKey);
+    var view = __instance.GetComponent<ZNetView>();
+    Helper.String(view, UniqueKey, value => {
+      Player.m_localPlayer?.AddUniqueKey(value);
+    });
+  }
+}
+[HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.UseItem))]
+public class OfferingBowlUniqueKey {
+  static int UniqueKey = "override_uniquekey".GetStableHashCode();
+  // string
+
+  static bool Prefix(OfferingBowl __instance) {
+    var view = __instance.GetComponent<ZNetView>();
+    var ret = true;
+    Helper.String(view, UniqueKey, value => {
+      ret = KeyUtils.MissingAllUniques(value);
+    });
+    if (ret && __instance.m_setGlobalKey != "") {
+      ret = KeyUtils.MissingAllGlobalKeys(__instance.m_setGlobalKey);
+    }
+    return ret;
+  }
+  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+    return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(OfferingBowl), nameof(OfferingBowl.m_setGlobalKey))))
+      .Advance(-1)
+      .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+      .Set(OpCodes.Call, Transpilers.EmitDelegate(((OfferingBowl bowl) => {
+        var view = bowl.GetComponent<ZNetView>();
+        Helper.String(view, UniqueKey, value => {
+          Player.m_localPlayer?.AddUniqueKey(value);
+        });
+      })).operand).InstructionEnumeration();
   }
 }

@@ -1,4 +1,5 @@
 using HarmonyLib;
+using UnityEngine;
 
 namespace SpawnerTweaks;
 
@@ -14,6 +15,7 @@ public class ZNetViewAwake {
       if (value == "pickable") view.gameObject.AddComponent<Pickable>();
       if (value == "spawnpoint") view.gameObject.AddComponent<CreatureSpawner>();
       if (value == "spawner") view.gameObject.AddComponent<SpawnArea>();
+      if (value == "-fireplace") Object.Destroy(view.GetComponent<Fireplace>());
     }
   }
   static void Postfix(ZNetView __instance) {
