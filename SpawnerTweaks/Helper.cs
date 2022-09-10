@@ -33,9 +33,9 @@ public class Helper {
     effect.m_prefab = GetPrefab(split[0]);
     if (effect.m_prefab == null) return null;
     if (split.Length > 1 && int.TryParse(split[1], out var flag)) {
-      effect.m_inheritParentRotation = (flag & 1) > 0;
-      effect.m_randomRotation = (flag & 2) > 0;
-      effect.m_scale = (flag & 4) + (flag & 8) > 0;
+      effect.m_randomRotation = (flag & 1) > 0;
+      effect.m_inheritParentRotation = (flag & 2) > 0;
+      effect.m_scale = (flag & 4) > 0;
       effect.m_inheritParentScale = (flag & 8) > 0;
       effect.m_attach = (flag & 16) > 0;
     }

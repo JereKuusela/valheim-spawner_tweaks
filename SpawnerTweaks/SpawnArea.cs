@@ -66,16 +66,9 @@ public class SpawnAreaAwake {
 [HarmonyPatch(typeof(SpawnArea), nameof(SpawnArea.SpawnOne))]
 public class SpawnAreaSpawnOne {
   static int SpawnCondition = "override_spawn_condition".GetStableHashCode();
-  static int GlobalKey = "override_globalkey".GetStableHashCode();
   // string
   static bool Prefix(SpawnArea __instance) {
     if (!Configuration.configSpawnArea.Value) return true;
-    var ret = true;
-    Helper.String(__instance.m_nview, GlobalKey, value => {
-      if (ZoneSystem.instance.GetGlobalKey(value))
-        ret = true;
-    });
-    if (!ret) return false;
     var value = __instance.m_nview.GetZDO().GetInt(SpawnCondition, -1);
     if (value < 0) return true;
     if ((value & 1) > 0 && EnvMan.instance.IsNight()) return false;
