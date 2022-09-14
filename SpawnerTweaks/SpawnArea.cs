@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using HarmonyLib;
+using UnityEngine;
 
 namespace SpawnerTweaks;
 
@@ -77,5 +80,11 @@ public class SpawnAreaSpawnOne {
     if ((value & 1) > 0 && EnvMan.instance.IsNight()) return false;
     if ((value & 2) > 0 && EnvMan.instance.IsDay()) return false;
     return true;
+  }
+  private static Vector3 GetCenterPoint(Character chararacter, GameObject obj) => chararacter?.GetCenterPoint() ?? obj.transform.position;
+  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+    return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.GetCenterPoint))))
+      .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, 4))
+      .Set(OpCodes.Call, Transpilers.EmitDelegate(GetCenterPoint).operand).InstructionEnumeration();
   }
 }

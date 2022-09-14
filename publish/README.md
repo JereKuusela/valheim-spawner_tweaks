@@ -24,6 +24,7 @@ To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.
 
 - v1.1
 	- Fixes trigger distance not working for spawners.
+	- Fixes error when spawning non-creatures from spawners.
 
 - v1.0
 	- Initial release.
