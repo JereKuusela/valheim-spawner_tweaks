@@ -22,7 +22,8 @@ To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.
 
 # Changelog
 
+- v1.1
+	- Fixes trigger distance not working for spawners.
+
 - v1.0
 	- Initial release.
-
-Thanks for Azumatt for creating the mod icon!

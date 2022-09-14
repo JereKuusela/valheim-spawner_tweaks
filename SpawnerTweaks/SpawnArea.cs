@@ -35,6 +35,8 @@ public class SpawnAreaAwake {
     Helper.Float(obj.m_nview, NearRadius, value => obj.m_nearRadius = value);
   static void SetFarRadius(SpawnArea obj) =>
     Helper.Float(obj.m_nview, FarRadius, value => obj.m_farRadius = value);
+  static void SetTriggerDistance(SpawnArea obj) =>
+    Helper.Float(obj.m_nview, TriggerDistance, value => obj.m_triggerDistance = value);
   static void SetMaxNear(SpawnArea obj) =>
     Helper.Int(obj.m_nview, MaxNear, value => obj.m_maxNear = value);
   static void SetMaxTotal(SpawnArea obj) =>
@@ -54,6 +56,7 @@ public class SpawnAreaAwake {
     SetSpawnRadius(__instance);
     SetNearRadius(__instance);
     SetFarRadius(__instance);
+    SetTriggerDistance(__instance);
     SetMaxNear(__instance);
     SetMaxTotal(__instance);
     SetRespawn(__instance);
