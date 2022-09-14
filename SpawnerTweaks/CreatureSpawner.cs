@@ -66,15 +66,20 @@ public class CreatureSpawnerAwake {
 
 [HarmonyPatch(typeof(CreatureSpawner), nameof(CreatureSpawner.Spawn))]
 public class CreatureSpawnerSpawn {
-  static int HashHealth = "override_health".GetStableHashCode();
+  static int Health = "override_health".GetStableHashCode();
+  // float
+  static int LevelChance = "override_level_chance".GetStableHashCode();
+  // float (percent)
 
   static void Postfix(CreatureSpawner __instance, ZNetView __result) {
     if (!Configuration.configCreatureSpawner.Value) return;
-    if (!__instance.m_nview || !__instance.m_nview.IsValid()) return;
-    var value = __instance.m_nview.GetZDO().GetFloat(HashHealth, -1f);
-    if (value < 0f) return;
-    if (__result.GetComponent<Character>() is { } character)
-      character.SetMaxHealth(value);
+    var obj = __result.GetComponent<Character>();
+    if (!obj) return;
+    Helper.Float(__instance.m_nview, LevelChance, levelChance => {
+      var level = Helper.RollLevel(__instance.m_minLevel, __instance.m_maxLevel, levelChance);
+      obj.SetLevel(level);
+    });
+    Helper.Float(__instance.m_nview, Health, obj.SetMaxHealth);
   }
 }
 

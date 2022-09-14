@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using HarmonyLib;
 using UnityEngine;
 
@@ -104,7 +107,7 @@ public class OfferingBowlAwake {
     obj.m_itemSpawnPoint = spawnPoint.transform;
 
   }
-  static void Postfix(OfferingBowl __instance) {
+  public static void Postfix(OfferingBowl __instance) {
     if (!Configuration.configOfferingBowl.Value) return;
     var view = __instance.GetComponentInParent<ZNetView>();
     if (!view || !view.IsValid()) return;
@@ -128,3 +131,85 @@ public class OfferingBowlAwake {
 }
 
 
+[HarmonyPatch(typeof(LocationProxy), nameof(LocationProxy.SpawnLocation))]
+public class UpdateOfferingBowls {
+  static void Postfix(LocationProxy __instance, bool __result) {
+    if (!__result || !Configuration.configOfferingBowl.Value) return;
+    var offeringBowl = __instance.m_instance?.GetComponentInChildren<OfferingBowl>();
+    if (offeringBowl != null) OfferingBowlAwake.Postfix(offeringBowl);
+  }
+}
+
+public static class OfferingBowlHelper {
+  static int Respawn = "override_respawn".GetStableHashCode();
+  // float (minutes)
+  static int SpawnTime = "spawn_time".GetStableHashCode();
+  public static bool CanRespawn(OfferingBowl obj) {
+    if (!Configuration.configOfferingBowl.Value) return true;
+    var view = obj.GetComponentInParent<ZNetView>();
+    var ret = true;
+    Helper.Float(view, Respawn, respawn => {
+      Helper.Long(view, SpawnTime, spawnTime => {
+        var now = ZNet.instance.GetTime();
+        var date = new DateTime(spawnTime);
+        ret = respawn > 0f && (now - date).TotalMinutes >= respawn;
+      });
+    });
+    return ret;
+  }
+}
+
+[HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.Interact))]
+public class OfferingBowlRespawnInteract {
+  static bool Prefix(OfferingBowl __instance) => OfferingBowlHelper.CanRespawn(__instance);
+}
+
+[HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.UseItem))]
+public class OfferingBowlRespawnUseItem {
+  static bool Prefix(OfferingBowl __instance) => OfferingBowlHelper.CanRespawn(__instance);
+}
+
+[HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.SpawnBoss))]
+public class OfferingBowlSetSpawnTime {
+  static int SpawnTime = "spawn_time".GetStableHashCode();
+  static void Postfix(OfferingBowl __instance, bool __result) {
+    if (!__result) return;
+    var view = __instance.GetComponentInParent<ZNetView>();
+    if (!view) return;
+    view.GetZDO().Set(SpawnTime, ZNet.instance.GetTime().Ticks);
+  }
+}
+
+[HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.DelayedSpawnBoss))]
+public class OfferingBowlSetupSpawn {
+  static int MinLevel = "override_minimum_level".GetStableHashCode();
+  // int
+  static int MaxLevel = "override_maximum_level".GetStableHashCode();
+  // int
+  static int LevelChance = "override_level_chance".GetStableHashCode();
+  // float (percent)
+  static int Health = "override_health".GetStableHashCode();
+  // float
+  static void Setup(BaseAI baseAI, OfferingBowl bowl) {
+    if (!Configuration.configOfferingBowl.Value) return;
+    var obj = baseAI.GetComponent<Character>();
+    if (!obj) return;
+    var view = bowl.GetComponentInParent<ZNetView>();
+    var levelChance = 10f;
+    var minLevel = 1;
+    var maxLevel = 1;
+    Helper.Float(view, LevelChance, value => levelChance = value);
+    Helper.Int(view, MinLevel, value => minLevel = value);
+    Helper.Int(view, MaxLevel, value => maxLevel = value);
+    var level = Helper.RollLevel(minLevel, maxLevel, levelChance);
+    if (level > 1) obj.SetLevel(level);
+    Helper.Float(view, Health, obj.SetMaxHealth);
+  }
+  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+    return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.SetPatrolPoint))))
+      .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+      .InsertAndAdvance(new CodeInstruction(OpCodes.Call, Transpilers.EmitDelegate(Setup).operand))
+      .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
+      .InstructionEnumeration();
+  }
+}

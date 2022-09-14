@@ -76,6 +76,11 @@ public class Helper {
     if (value < 0f) return;
     action(value);
   }
+  public static void Long(ZNetView view, int hash, Action<long> action) {
+    var value = view.GetZDO().GetLong(hash, -1L);
+    if (value < 0L) return;
+    action(value);
+  }
   public static void Int(ZNetView view, int hash, Action<int> action) {
     var value = view.GetZDO().GetInt(hash, -1);
     if (value < 0) return;
@@ -91,5 +96,12 @@ public class Helper {
     var prefab = Helper.GetPrefab(value);
     if (prefab == null) return;
     action(prefab);
+  }
+
+  public static int RollLevel(int min, int max, float chance) {
+    var level = min;
+    while (level < max && UnityEngine.Random.Range(0f, 100f) <= chance)
+      level++;
+    return level;
   }
 }
