@@ -56,6 +56,9 @@ public class Helper {
     SpawnArea.SpawnData spawn = new();
     spawn.m_prefab = GetPrefab(split[0]);
     if (spawn.m_prefab == null) return null;
+    spawn.m_weight = 1f;
+    spawn.m_minLevel = 1;
+    spawn.m_maxLevel = 1;
     if (split.Length > 1)
       spawn.m_weight = Float(split[1], 1f);
     if (split.Length > 2) {
