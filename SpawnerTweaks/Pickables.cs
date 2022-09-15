@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using HarmonyLib;
 
 namespace SpawnerTweaks;
@@ -16,25 +18,37 @@ public class PickableAwake {
   // float (meters)
   static int UseEffect = "override_use_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static void SetSpawn(Pickable obj) =>
-    Helper.Prefab(obj.m_nview, Spawn, value => obj.m_itemPrefab = value);
-  static void SetRespawn(Pickable obj) =>
-    Helper.Float(obj.m_nview, Spawn, value => obj.m_respawnTimeMinutes = (int)value);
-  static void SetAmount(Pickable obj) =>
-    Helper.Int(obj.m_nview, Spawn, value => obj.m_amount = value);
-  static void SetName(Pickable obj) =>
-    Helper.String(obj.m_nview, Spawn, value => obj.m_overrideName = value);
-  static void SetSpawnOffset(Pickable obj) =>
-    Helper.Float(obj.m_nview, SpawnOffset, value => obj.m_spawnOffset = value);
-  static void SetUseEffect(Pickable obj) =>
-    Helper.String(obj.m_nview, UseEffect, value => obj.m_pickEffector = Helper.ParseEffects(value));
-  static void Postfix(Pickable __instance) {
+  static void SetSpawn(Pickable obj, ZNetView view) =>
+    Helper.Prefab(view, Spawn, value => obj.m_itemPrefab = value);
+  static void SetRespawn(Pickable obj, ZNetView view) =>
+    Helper.Float(view, Respawn, value => obj.m_respawnTimeMinutes = (int)value);
+  static void SetAmount(Pickable obj, ZNetView view) =>
+    Helper.Int(view, Amount, value => obj.m_amount = value);
+  static void SetName(Pickable obj, ZNetView view) =>
+    Helper.String(view, Name, value => obj.m_overrideName = value);
+  static void SetSpawnOffset(Pickable obj, ZNetView view) =>
+    Helper.Float(view, SpawnOffset, value => obj.m_spawnOffset = value);
+  static void SetUseEffect(Pickable obj, ZNetView view) =>
+    Helper.String(view, UseEffect, value => obj.m_pickEffector = Helper.ParseEffects(value));
+  // Must be prefix because Awake starts respawn loop only if respawning.
+  static void Prefix(Pickable __instance) {
     if (!Configuration.configPickable.Value) return;
-    if (!__instance.m_nview || !__instance.m_nview.IsValid()) return;
-    SetRespawn(__instance);
-    SetSpawn(__instance);
-    SetAmount(__instance);
-    SetName(__instance);
-    SetSpawnOffset(__instance);
+    var view = __instance.GetComponent<ZNetView>();
+    if (!view || !view.IsValid()) return;
+    SetRespawn(__instance, view);
+    SetSpawn(__instance, view);
+    SetAmount(__instance, view);
+    SetName(__instance, view);
+    SetSpawnOffset(__instance, view);
+    SetUseEffect(__instance, view);
+  }
+}
+
+[HarmonyPatch(typeof(Pickable), nameof(Pickable.Drop))]
+public class PickableDrop {
+  private static void SetStack(ItemDrop obj, int amount) => obj?.SetStack(amount);
+  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+    return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ItemDrop), nameof(ItemDrop.SetStack))))
+      .Set(OpCodes.Call, Transpilers.EmitDelegate(SetStack).operand).InstructionEnumeration();
   }
 }
