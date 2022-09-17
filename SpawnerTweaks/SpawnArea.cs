@@ -3,7 +3,7 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using UnityEngine;
 
-namespace SpawnerTweaks;
+namespace Plugin;
 
 [HarmonyPatch(typeof(SpawnArea), nameof(SpawnArea.Awake))]
 public class SpawnAreaAwake {

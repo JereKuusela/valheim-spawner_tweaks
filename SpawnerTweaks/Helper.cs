@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
-namespace SpawnerTweaks;
+namespace Plugin;
 public class Helper {
   public static float Float(string arg, float defaultValue = 0f) {
     if (!float.TryParse(arg, NumberStyles.Float, CultureInfo.InvariantCulture, out var result))

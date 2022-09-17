@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
 
-namespace SpawnerTweaks;
+namespace Plugin;
 
 [HarmonyPatch(typeof(CreatureSpawner), nameof(CreatureSpawner.Awake))]
 public class CreatureSpawnerAwake {

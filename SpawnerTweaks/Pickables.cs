@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
 
-namespace SpawnerTweaks;
+namespace Plugin;
 
 [HarmonyPatch(typeof(Pickable), nameof(Pickable.Awake))]
 public class PickableAwake {
@@ -47,7 +47,7 @@ public class PickableAwake {
 [HarmonyPatch(typeof(Pickable), nameof(Pickable.Drop))]
 public class PickableDrop {
   private static void SetStack(ItemDrop obj, int amount) => obj?.SetStack(amount);
-  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+  static IEnumerable<CodeInstruction> Transpilera(IEnumerable<CodeInstruction> instructions) {
     return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ItemDrop), nameof(ItemDrop.SetStack))))
       .Set(OpCodes.Call, Transpilers.EmitDelegate(SetStack).operand).InstructionEnumeration();
   }

@@ -2,9 +2,9 @@
 using HarmonyLib;
 using Service;
 
-namespace SpawnerTweaks;
+namespace Plugin;
 [BepInPlugin(GUID, NAME, VERSION)]
-public class SpawnerTweaks : BaseUnityPlugin {
+public class Plugin : BaseUnityPlugin {
   const string GUID = "spawner_tweaks";
   const string NAME = "Spawner Tweaks";
   const string VERSION = "1.1";
