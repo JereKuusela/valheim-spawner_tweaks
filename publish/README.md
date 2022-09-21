@@ -22,6 +22,9 @@ To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.
 
 # Changelog
 
+- v1.2
+	- Fixes pickables showing error if name and dropped item is not defined.
+
 - v1.1
 	- Fixes trigger distance not working for spawners.
 	- Fixes error when spawning non-creatures from spawners.

@@ -52,3 +52,14 @@ public class PickableDrop {
       .Set(OpCodes.Call, Transpilers.EmitDelegate(SetStack).operand).InstructionEnumeration();
   }
 }
+
+[HarmonyPatch(typeof(Pickable), nameof(Pickable.GetHoverName))]
+public class GetHoverName {
+  static bool Prefix(Pickable __instance, ref string __result) {
+    if (string.IsNullOrEmpty(__instance.m_overrideName) && !__instance.m_itemPrefab) {
+      __result = Utils.GetPrefabName(__instance.gameObject);
+      return false;
+    }
+    return true;
+  }
+}
