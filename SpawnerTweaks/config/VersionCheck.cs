@@ -5,16 +5,8 @@ using UnityEngine;
 namespace ServerSync;
 public class VersionCheck {
   public string Name;
-  private string? displayName;
-  public string DisplayName {
-    get => displayName ?? Name;
-    set => displayName = value;
-  }
-  private string? currentVersion;
-  public string CurrentVersion {
-    get => currentVersion ?? "0.0.0";
-    set => currentVersion = value;
-  }
+  public string DisplayName;
+  public string CurrentVersion;
   // Tracks which clients have passed the version check (only for servers).
   private readonly List<ZRpc> ValidatedClients = new();
 
@@ -22,23 +14,18 @@ public class VersionCheck {
   public VersionCheck(ConfigSync configSync) {
     ConfigSync = configSync;
     Name = ConfigSync.Name;
+    DisplayName = ConfigSync.DisplayName;
+    CurrentVersion = ConfigSync.CurrentVersion;
     VersionCheckPatches.VersionCheck = this;
   }
   private string? ReceivedVersion = null;
-  public void Initialize() {
-    ReceivedVersion = null;
-    if (ConfigSync == null) return;
-    Name = ConfigSync.Name;
-    DisplayName = ConfigSync.DisplayName!;
-    CurrentVersion = ConfigSync.CurrentVersion!;
-  }
   public bool IsVersionOk() => CurrentVersion == ReceivedVersion;
 
   public string ErrorMessage(ZRpc? rpc = null) {
     if (rpc != null)
       return $"Disconnect: The client ({rpc.m_socket.GetHostName()}) doesn't have the correct {DisplayName} version {ReceivedVersion}";
     if (ReceivedVersion == null)
-      return $"Mod {DisplayName} must be installed on the server (without Server only mode).";
+      return $"Mod {DisplayName} must be installed on the server.";
     return $"Mod {DisplayName} requires version {ReceivedVersion}. Installed is version {CurrentVersion}.";
   }
   private static void Logout() {
@@ -46,12 +33,10 @@ public class VersionCheck {
     AccessTools.DeclaredField(typeof(ZNet), "m_connectionStatus").SetValue(null, ZNet.ConnectionStatus.ErrorVersion);
   }
   private static void DisconnectClient(ZRpc rpc) => rpc.Invoke("Error", new object[] { (int)ZNet.ConnectionStatus.ErrorVersion });
-  public void CheckVersion(ZRpc rpc, ZPackage pkg) {
-    var minimumRequiredVersion = pkg.ReadString();
-    var currentVersion = pkg.ReadString();
+  public void CheckVersion(ZRpc rpc, string version) {
     var target = ZNet.instance.IsServer() ? "client" : "server";
-    Debug.Log($"Received {DisplayName} version {currentVersion} from the ${target}.");
-    ReceivedVersion = currentVersion;
+    Debug.Log($"Received {DisplayName} version {version} from the {target}.");
+    ReceivedVersion = version;
     if (ZNet.instance.IsServer() && IsVersionOk())
       ValidatedClients.Add(rpc);
   }
@@ -71,13 +56,11 @@ public class VersionCheck {
   }
 
   public void Initialize(ZNetPeer peer) {
-    Initialize();
-    peer.m_rpc.Register<ZPackage>($"VersionCheck_{Name}", CheckVersion);
+    ReceivedVersion = null;
+    peer.m_rpc.Register<string>($"VersionCheck_{Name}", CheckVersion);
     var target = ZNet.instance.IsServer() ? "client" : "server";
-    Debug.Log($"Sending {DisplayName} version {CurrentVersion} to the ${target}.");
-    ZPackage zpackage = new ZPackage();
-    zpackage.Write(CurrentVersion);
-    peer.m_rpc.Invoke($"VersionCheck_{Name}", new object[] { zpackage });
+    Debug.Log($"Sending {DisplayName} version {CurrentVersion} to the {target}.");
+    peer.m_rpc.Invoke($"VersionCheck_{Name}", CurrentVersion);
   }
   public void Disconnect(ZRpc rpc) => ValidatedClients.Remove(rpc);
 }

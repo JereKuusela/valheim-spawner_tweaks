@@ -102,10 +102,8 @@ public class ConfigSync {
   public static bool ProcessingServerUpdate = false;
 
   public readonly string Name;
-  public string? DisplayName;
-  public string? CurrentVersion;
-  public string? MinimumRequiredVersion;
-  public bool ModRequired = false;
+  public string DisplayName;
+  public string CurrentVersion;
 
   private bool? forceConfigLocking;
 
@@ -156,9 +154,12 @@ public class ConfigSync {
     });
   }
 
-  public ConfigSync(string name) {
+  public ConfigSync(string name, string display, string version) {
     Name = name;
+    DisplayName = display;
+    CurrentVersion = version;
     configSyncs.Add(this);
+    IsLocked = true;
     new VersionCheck(this);
   }
 
@@ -678,11 +679,6 @@ public class ConfigSync {
           if (configSync.CurrentVersion != null) {
             entries.Add(new PackageEntry { section = "Internal", key = "serverversion", type = typeof(string), value = configSync.CurrentVersion });
           }
-
-          if (configSync.MinimumRequiredVersion != null) {
-            entries.Add(new PackageEntry { section = "Internal", key = "requiredversion", type = typeof(string), value = configSync.MinimumRequiredVersion });
-          }
-
           entries.Add(new PackageEntry { section = "Internal", key = "lockexempt", type = typeof(bool), value = ((SyncedList)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance)).Contains(rpc.GetSocket().GetHostName()) });
 
           ZPackage package = ConfigsToPackage(configSync.allConfigs.Select(c => c.BaseConfig), configSync.allCustomValues, entries, false);

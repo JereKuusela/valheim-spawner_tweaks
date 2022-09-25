@@ -73,6 +73,7 @@ public class CreatureSpawnerSpawn {
 
   static void Postfix(CreatureSpawner __instance, ZNetView __result) {
     if (!Configuration.configCreatureSpawner.Value) return;
+    if (!__result) return;
     var obj = __result.GetComponent<Character>();
     if (!obj) return;
     Helper.Float(__instance.m_nview, LevelChance, levelChance => {
