@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
@@ -69,11 +70,32 @@ public class SpawnAreaAwake {
   }
 }
 
-[HarmonyPatch(typeof(SpawnArea), nameof(SpawnArea.SpawnOne))]
-public class SpawnAreaSpawnOne {
+[HarmonyPatch(typeof(SpawnArea))]
+public class SpawnAreaTweaks {
+  static int Faction = "override_faction".GetStableHashCode();
+  // string
+  static int Spawn = "override_spawn".GetStableHashCode();
+  // prefab,weight,minLevel,maxLevel|prefab,weight,minLevel,maxLevel|...
+  private static float? SpawnHealth = null;
+  private static string? SpawnFaction = null;
+  [HarmonyPatch(nameof(SpawnArea.SelectWeightedPrefab)), HarmonyPostfix]
+  static void GetSpawnedData(SpawnArea __instance, SpawnArea.SpawnData __result) {
+    SpawnHealth = null;
+    SpawnFaction = null;
+    Helper.String(__instance.m_nview, Spawn, value => {
+      var index = __instance.m_prefabs.IndexOf(__result);
+      var split = value.Split('|')[index].Split(',');
+      if (split.Length > 4)
+        SpawnFaction = split[4];
+      if (split.Length > 5)
+        SpawnHealth = Helper.Float(split[5], 0f);
+    });
+  }
+
   static int SpawnCondition = "override_spawn_condition".GetStableHashCode();
   // string
-  static bool Prefix(SpawnArea __instance) {
+  [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyPrefix]
+  static bool CheckTime(SpawnArea __instance) {
     if (!Configuration.configSpawnArea.Value) return true;
     var value = __instance.m_nview.GetZDO().GetInt(SpawnCondition, -1);
     if (value < 0) return true;
@@ -81,8 +103,20 @@ public class SpawnAreaSpawnOne {
     if ((value & 2) > 0 && EnvMan.instance.IsDay()) return false;
     return true;
   }
-  private static Vector3 GetCenterPoint(Character chararacter, GameObject obj) => chararacter?.GetCenterPoint() ?? obj.transform.position;
-  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+
+
+  private static Vector3 GetCenterPoint(Character character, GameObject obj) {
+    if (SpawnHealth.HasValue)
+      character.SetMaxHealth(SpawnHealth.Value);
+    if (Enum.TryParse<Character.Faction>(SpawnFaction, true, out var faction)) {
+      character.m_faction = faction;
+      character.m_nview.GetZDO().Set(Faction, SpawnFaction);
+    }
+    return character?.GetCenterPoint() ?? obj.transform.position;
+  }
+
+  [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyTranspiler]
+  static IEnumerable<CodeInstruction> FixCenterPoint(IEnumerable<CodeInstruction> instructions) {
     return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.GetCenterPoint))))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, 4))
       .Set(OpCodes.Call, Transpilers.EmitDelegate(GetCenterPoint).operand).InstructionEnumeration();

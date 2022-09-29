@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
@@ -67,6 +68,8 @@ public class CreatureSpawnerAwake {
 [HarmonyPatch(typeof(CreatureSpawner), nameof(CreatureSpawner.Spawn))]
 public class CreatureSpawnerSpawn {
   static int Health = "override_health".GetStableHashCode();
+  static int Faction = "override_faction".GetStableHashCode();
+  // float
   // float
   static int LevelChance = "override_level_chance".GetStableHashCode();
   // float (percent)
@@ -81,6 +84,11 @@ public class CreatureSpawnerSpawn {
       obj.SetLevel(level);
     });
     Helper.Float(__instance.m_nview, Health, obj.SetMaxHealth);
+    Helper.String(__instance.m_nview, Faction, value => {
+      obj.m_nview.GetZDO().Set(Faction, value);
+      if (Enum.TryParse<Character.Faction>(value, true, out var faction))
+        obj.m_faction = faction;
+    });
   }
 }
 

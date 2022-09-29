@@ -190,6 +190,8 @@ public class OfferingBowlSetupSpawn {
   // float (percent)
   static int Health = "override_health".GetStableHashCode();
   // float
+  static int Faction = "override_faction".GetStableHashCode();
+  // float
   static void Setup(BaseAI baseAI, OfferingBowl bowl) {
     if (!Configuration.configOfferingBowl.Value) return;
     var obj = baseAI.GetComponent<Character>();
@@ -204,6 +206,11 @@ public class OfferingBowlSetupSpawn {
     var level = Helper.RollLevel(minLevel, maxLevel, levelChance);
     if (level > 1) obj.SetLevel(level);
     Helper.Float(view, Health, obj.SetMaxHealth);
+    Helper.String(view, Faction, value => {
+      obj.m_nview.GetZDO().Set(Faction, value);
+      if (Enum.TryParse<Character.Faction>(value, true, out var faction))
+        obj.m_faction = faction;
+    });
   }
   static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
     return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.SetPatrolPoint))))

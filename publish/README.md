@@ -22,8 +22,11 @@ To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.
 
 # Changelog
 
+- v1.3
+	- Adds support for faction overrides.
+
 - v1.2
-  - Fixes an issue with the Marketplace mod.
+	- Fixes an issue with the Marketplace mod.
 	- Fixes pickables showing error if name and dropped item is not defined.
 
 - v1.1
