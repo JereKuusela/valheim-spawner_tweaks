@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
 
-namespace Plugin;
+namespace SpawnerTweaks;
 
 [HarmonyPatch(typeof(Pickable), nameof(Pickable.Awake))]
 public class PickableAwake {

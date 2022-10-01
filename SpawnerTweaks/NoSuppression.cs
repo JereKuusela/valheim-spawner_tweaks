@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using HarmonyLib;
-namespace Plugin;
+namespace SpawnerTweaks;
 
 [HarmonyPatch(typeof(ZNetScene), nameof(ZNetScene.Awake))]
 public class NoSuppression {

@@ -1,6 +1,6 @@
 using BepInEx.Configuration;
 using Service;
-namespace Plugin;
+namespace SpawnerTweaks;
 public class Configuration {
 #nullable disable
   public static ConfigEntry<bool> configOfferingBowl;

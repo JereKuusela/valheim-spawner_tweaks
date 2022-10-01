@@ -4,7 +4,7 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using UnityEngine;
 
-namespace Plugin;
+namespace SpawnerTweaks;
 [HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.Awake))]
 public class OfferingBowlAwake {
   static int Spawn = "override_spawn".GetStableHashCode();

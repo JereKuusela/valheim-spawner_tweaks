@@ -1,7 +1,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace Plugin;
+namespace SpawnerTweaks;
 
 [HarmonyPatch(typeof(ZNetView), nameof(ZNetView.Awake))]
 public class ZNetViewAwake {

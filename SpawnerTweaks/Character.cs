@@ -1,7 +1,7 @@
 using System;
 using HarmonyLib;
 
-namespace Plugin;
+namespace SpawnerTweaks;
 
 [HarmonyPatch(typeof(Character), nameof(Character.Awake))]
 public class CharacterAwake {

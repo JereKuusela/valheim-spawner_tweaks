@@ -4,7 +4,7 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using UnityEngine;
 
-namespace Plugin;
+namespace SpawnerTweaks;
 
 [HarmonyPatch(typeof(SpawnArea), nameof(SpawnArea.Awake))]
 public class SpawnAreaAwake {
