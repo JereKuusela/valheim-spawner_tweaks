@@ -6,6 +6,8 @@ public class Configuration {
   public static ConfigEntry<bool> configOfferingBowl;
   public static ConfigEntry<bool> configComponent;
   public static ConfigEntry<bool> configPickable;
+  public static ConfigEntry<bool> configContainer;
+  public static ConfigEntry<bool> configItemStand;
   public static ConfigEntry<bool> configSpawnArea;
   public static ConfigEntry<bool> configCreatureSpawner;
   public static ConfigEntry<bool> configNoCreatureSpawnerSuppression;
@@ -20,6 +22,8 @@ public class Configuration {
     configCreatureSpawner = wrapper.Bind(section, "Spawn points", true, "Spawn point properties can be overridden.");
     configComponent = wrapper.Bind(section, "Components", true, "Altars, pickables, spawn points and spawners can be attached to any object.");
     configPickable = wrapper.Bind(section, "Pickables", true, "Pickable properties can be overridden.");
+    configContainer = wrapper.Bind(section, "Chests", true, "Chest properties can be overridden.");
+    configItemStand = wrapper.Bind(section, "Item stands", true, "Item stand properties can be overridden.");
     configSpawnArea = wrapper.Bind(section, "Spawners", true, "Spawner properties can be overridden.");
     configOfferingBowl = wrapper.Bind(section, "Boss altars", true, "Boss altar properties can be overridden.");
   }

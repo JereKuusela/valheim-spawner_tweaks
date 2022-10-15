@@ -15,6 +15,8 @@ public class ZNetViewAwake {
       if (value == "pickable") view.gameObject.AddComponent<Pickable>();
       if (value == "spawnpoint") view.gameObject.AddComponent<CreatureSpawner>();
       if (value == "spawner") view.gameObject.AddComponent<SpawnArea>();
+      if (value == "container") view.gameObject.AddComponent<Container>();
+      if (value == "itemstand") view.gameObject.AddComponent<ItemStand>();
       if (value == "-fireplace") Object.Destroy(view.GetComponent<Fireplace>());
     }
   }

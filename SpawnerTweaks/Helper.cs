@@ -74,6 +74,29 @@ public class Helper {
     return spawns.ToList();
   }
 
+
+  public static DropTable.DropData ParseDropData(string data) {
+    var split = data.Split(',');
+    DropTable.DropData drop = new();
+    drop.m_item = GetPrefab(split[0]);
+    drop.m_weight = 1f;
+    drop.m_stackMin = 1;
+    drop.m_stackMax = 1;
+    if (split.Length > 1)
+      drop.m_weight = Float(split[1], 1f);
+    if (split.Length > 2) {
+      drop.m_stackMin = Int(split[2], 1);
+      drop.m_stackMax = Int(split[2], 1);
+    }
+    if (split.Length > 3)
+      drop.m_stackMax = Int(split[3], 1);
+    return drop;
+  }
+  public static List<DropTable.DropData> ParseDropsData(string data) {
+    var drops = data.Split('|').Select(drop => ParseDropData(drop)).Where(drop => drop.m_item != null);
+    return drops.ToList();
+  }
+
   public static void Float(ZNetView view, int hash, Action<float> action) {
     if (view == null || !view.IsValid()) return;
     var value = view.GetZDO().GetFloat(hash, -1f);
@@ -90,6 +113,11 @@ public class Helper {
     if (view == null || !view.IsValid()) return;
     var value = view.GetZDO().GetInt(hash, -1);
     if (value < 0) return;
+    action(value);
+  }
+  public static void Bool(ZNetView view, int hash, Action<bool> action) {
+    if (view == null || !view.IsValid()) return;
+    var value = view.GetZDO().GetBool(hash, false);
     action(value);
   }
   public static void String(ZNetView view, int hash, Action<string> action) {
@@ -112,4 +140,6 @@ public class Helper {
       level++;
     return level;
   }
+
+  public static bool Owner(ZNetView view) => view && view.IsValid() && view.IsOwner();
 }
