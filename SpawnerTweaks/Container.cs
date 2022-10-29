@@ -45,7 +45,7 @@ public class ContainerCheckForChanges {
   static void Postfix(Container __instance) {
     if (!Configuration.configContainer.Value) return;
     var obj = __instance;
-    if (!obj.m_nview.IsOwner()) return;
+    if (!Helper.Owner(__instance.m_nview)) return;
     Helper.Float(obj.m_nview, Respawn, respawn => {
       Helper.Long(obj.m_nview, Changed, changed => {
         var d = new DateTime(changed);

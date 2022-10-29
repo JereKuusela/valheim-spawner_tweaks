@@ -22,7 +22,18 @@ To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.
 - No spawn point suppression (one time): One time spawn points can't be suppressed with player base structures (even if configured to be respawning).
 - No spawn point suppression (respawning): Respawning spawn points can't be suppressed with player base structures (even if configured to be one time). This is off by default because it can affect vanilla game play.
 
+# Credits
+
+Thanks for Azumatt for creating the mod icon!
+
+Sources: [GitHub](https://github.com/JereKuusela/valheim-spawner_tweaks)
+
+Donations: [Buy me a computer](https://www.buymeacoffee.com/jerekuusela)
+
 # Changelog
+
+- v1.5
+	- Fixes the black screen.
 
 - v1.4
 	- Adds support for chests.
@@ -40,6 +51,3 @@ To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.
 	- Fixes error when spawning non-creatures from spawners.
 	- Fixes the default weight for spawners being 0.
 	- Fixes pickables.
-
-- v1.0
-	- Initial release.
