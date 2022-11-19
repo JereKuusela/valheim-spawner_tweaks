@@ -64,6 +64,8 @@ public class SpawnAreaTweaks {
   // string
   static int Spawn = "override_spawn".GetStableHashCode();
   // prefab,weight,minLevel,maxLevel|prefab,weight,minLevel,maxLevel|...
+  static int Data = "override_data".GetStableHashCode();
+  // string
   private static float? SpawnHealth = null;
   private static string? SpawnFaction = null;
   private static int? SpawnLevel = null;
@@ -84,13 +86,19 @@ public class SpawnAreaTweaks {
       var index = __instance.m_prefabs.IndexOf(__result);
       var split = value.Split('|')[index].Split(',');
       if (split.Length > 2)
-        minLevel = Helper.Int(split[2], 1);
+        minLevel = Helper.Int(split[2]);
       if (split.Length > 3)
         maxLevel = Helper.Int(split[3]);
-      if (split.Length > 4)
-        SpawnFaction = split[4];
-      if (split.Length > 5)
-        SpawnHealth = Helper.Float(split[5], 0f);
+      if (split.Length > 4) {
+        var arg = Helper.Float(split[4]);
+        if (arg.HasValue) {
+          SpawnHealth = arg;
+        } else {
+          SpawnFaction = split[4];
+          if (split.Length > 5)
+            SpawnHealth = Helper.Float(split[5]);
+        }
+      }
     });
     if (minLevel.HasValue && maxLevel.HasValue) {
       SpawnLevel = Helper.RollLevel(minLevel.Value, maxLevel.Value, __instance.m_levelupChance);

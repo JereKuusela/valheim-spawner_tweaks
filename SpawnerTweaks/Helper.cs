@@ -6,14 +6,24 @@ using UnityEngine;
 
 namespace SpawnerTweaks;
 public class Helper {
-  public static float Float(string arg, float defaultValue = 0f) {
+  public static float Float(string arg, float defaultValue) {
     if (!float.TryParse(arg, NumberStyles.Float, CultureInfo.InvariantCulture, out var result))
       return defaultValue;
     return result;
   }
-  public static int Int(string arg, int defaultValue = 0) {
+  public static float? Float(string arg) {
+    if (!float.TryParse(arg, NumberStyles.Float, CultureInfo.InvariantCulture, out var result))
+      return null;
+    return result;
+  }
+  public static int Int(string arg, int defaultValue) {
     if (!int.TryParse(arg, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
       return defaultValue;
+    return result;
+  }
+  public static int? Int(string arg) {
+    if (!int.TryParse(arg, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
+      return null;
     return result;
   }
 
@@ -142,4 +152,6 @@ public class Helper {
   }
 
   public static bool Owner(ZNetView view) => view && view.IsValid() && view.IsOwner();
+
+  
 }

@@ -85,11 +85,11 @@ public class OfferingBowlAwake {
     Helper.String(view, ItemOffset, value => {
       var split = value.Split(',');
       var pos = obj.m_itemSpawnPoint.localPosition;
-      pos.x = Helper.Float(split[0]);
+      pos.x = Helper.Float(split[0], pos.x);
       if (split.Length > 1)
-        pos.z = Helper.Float(split[1]);
+        pos.z = Helper.Float(split[1], pos.z);
       if (split.Length > 2)
-        pos.y = Helper.Float(split[2]);
+        pos.y = Helper.Float(split[2], pos.y);
       obj.m_itemSpawnPoint.localPosition = pos;
     });
   static void SetStartEffect(OfferingBowl obj, ZNetView view) =>

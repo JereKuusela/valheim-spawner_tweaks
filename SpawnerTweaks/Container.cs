@@ -26,7 +26,7 @@ public class ContainerAddDefaultItems {
     if (!Configuration.configContainer.Value) return;
     var obj = __instance;
     Helper.Int(obj.m_nview, MinAmount, value => obj.m_defaultItems.m_dropMin = value);
-    Helper.Int(obj.m_nview, MaxAmount, value => obj.m_defaultItems.m_dropMin = value);
+    Helper.Int(obj.m_nview, MaxAmount, value => obj.m_defaultItems.m_dropMax = value);
     Helper.String(obj.m_nview, Items, value => {
       obj.m_defaultItems.m_drops = Helper.ParseDropsData(value);
       obj.m_defaultItems.m_oneOfEach = true;
