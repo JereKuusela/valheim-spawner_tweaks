@@ -32,6 +32,11 @@ Donations: [Buy me a computer](https://www.buymeacoffee.com/jerekuusela)
 
 # Changelog
 
+- v1.6
+	- Adds support for changing faction, health and level of all spawner creatures.
+	- Fixes CLLC overriding spawner levels.
+	- Fixes the spawn condition not working for spawners.
+
 - v1.5
 	- Fixes the black screen.
 

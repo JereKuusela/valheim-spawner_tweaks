@@ -30,66 +30,71 @@ public class SpawnAreaAwake {
   // float (meters)
   static int SpawnCondition = "override_spawn_condition".GetStableHashCode();
   // flag (1 = day only, 2 = night only, 4 = ground only)
-
-  static void SetLevelChance(SpawnArea obj) =>
-    Helper.Float(obj.m_nview, LevelChance, value => obj.m_levelupChance = value);
-  static void SetSpawnRadius(SpawnArea obj) =>
-    Helper.Float(obj.m_nview, SpawnRadius, value => obj.m_spawnRadius = value);
-  static void SetNearRadius(SpawnArea obj) =>
-    Helper.Float(obj.m_nview, NearRadius, value => obj.m_nearRadius = value);
-  static void SetFarRadius(SpawnArea obj) =>
-    Helper.Float(obj.m_nview, FarRadius, value => obj.m_farRadius = value);
-  static void SetTriggerDistance(SpawnArea obj) =>
-    Helper.Float(obj.m_nview, TriggerDistance, value => obj.m_triggerDistance = value);
-  static void SetMaxNear(SpawnArea obj) =>
-    Helper.Int(obj.m_nview, MaxNear, value => obj.m_maxNear = value);
-  static void SetMaxTotal(SpawnArea obj) =>
-    Helper.Int(obj.m_nview, MaxTotal, value => obj.m_maxTotal = value);
-  static void SetRespawn(SpawnArea obj) =>
-    Helper.Float(obj.m_nview, Respawn, value => obj.m_spawnIntervalSec = value);
-  static void SetSpawnEffect(SpawnArea obj) =>
-    Helper.String(obj.m_nview, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
-  static void SetSpawn(SpawnArea obj) =>
-    Helper.String(obj.m_nview, Spawn, value => obj.m_prefabs = Helper.ParseSpawnsData(value));
-  static void SetSpawnCondition(SpawnArea obj) =>
-    Helper.Int(obj.m_nview, Spawn, value => obj.m_onGroundOnly = (value & 4) > 0);
+  
   static void Postfix(SpawnArea __instance) {
     if (!Configuration.configSpawnArea.Value) return;
-    if (!__instance.m_nview || !__instance.m_nview.IsValid()) return;
-    SetLevelChance(__instance);
-    SetSpawnRadius(__instance);
-    SetNearRadius(__instance);
-    SetFarRadius(__instance);
-    SetTriggerDistance(__instance);
-    SetMaxNear(__instance);
-    SetMaxTotal(__instance);
-    SetRespawn(__instance);
-    SetSpawnEffect(__instance);
-    SetSpawn(__instance);
-    SetSpawnCondition(__instance);
+    var obj = __instance;
+    var view = obj.m_nview;
+    if (!view || !view.IsValid()) return;
+    Helper.Float(view, LevelChance, value => obj.m_levelupChance = value);
+    Helper.Float(view, SpawnRadius, value => obj.m_spawnRadius = value);
+    Helper.Float(view, NearRadius, value => obj.m_nearRadius = value);
+    Helper.Float(view, FarRadius, value => obj.m_farRadius = value);
+    Helper.Float(view, TriggerDistance, value => obj.m_triggerDistance = value);
+    Helper.Int(view, MaxNear, value => obj.m_maxNear = value);
+    Helper.Int(view, MaxTotal, value => obj.m_maxTotal = value);
+    Helper.Float(view, Respawn, value => obj.m_spawnIntervalSec = value);
+    Helper.String(view, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
+    Helper.String(view, Spawn, value => obj.m_prefabs = Helper.ParseSpawnsData(value));
+    Helper.Int(view, SpawnCondition, value => obj.m_onGroundOnly = (value & 4) > 0);
   }
 }
 
 [HarmonyPatch(typeof(SpawnArea))]
 public class SpawnAreaTweaks {
+  static int MinLevel = "override_minimum_level".GetStableHashCode();
+  // int
+  static int MaxLevel = "override_maximum_level".GetStableHashCode();
+  // int
+  static int LevelChance = "override_level_chance".GetStableHashCode();
+  // float (percent)
+  static int Health = "override_health".GetStableHashCode();
+  // float
   static int Faction = "override_faction".GetStableHashCode();
   // string
   static int Spawn = "override_spawn".GetStableHashCode();
   // prefab,weight,minLevel,maxLevel|prefab,weight,minLevel,maxLevel|...
   private static float? SpawnHealth = null;
   private static string? SpawnFaction = null;
+  private static int? SpawnLevel = null;
   [HarmonyPatch(nameof(SpawnArea.SelectWeightedPrefab)), HarmonyPostfix]
   static void GetSpawnedData(SpawnArea __instance, SpawnArea.SpawnData __result) {
+    Spawned = null;
     SpawnHealth = null;
     SpawnFaction = null;
+    SpawnLevel = null;
+    int? minLevel = null;
+    int? maxLevel = null;
+    Helper.Float(__instance.m_nview, Health, value => SpawnHealth = value);
+    Helper.String(__instance.m_nview, Faction, value => SpawnFaction = value);
+    Helper.Int(__instance.m_nview, MinLevel, value => minLevel = value);
+    Helper.Int(__instance.m_nview, MaxLevel, value => maxLevel = value);
+    
     Helper.String(__instance.m_nview, Spawn, value => {
       var index = __instance.m_prefabs.IndexOf(__result);
       var split = value.Split('|')[index].Split(',');
+      if (split.Length > 2)
+        minLevel = Helper.Int(split[2], 1);
+      if (split.Length > 3)
+        maxLevel = Helper.Int(split[3]);
       if (split.Length > 4)
         SpawnFaction = split[4];
       if (split.Length > 5)
         SpawnHealth = Helper.Float(split[5], 0f);
     });
+    if (minLevel.HasValue && maxLevel.HasValue) {
+      SpawnLevel = Helper.RollLevel(minLevel.Value, maxLevel.Value, __instance.m_levelupChance);
+    }
   }
 
   static int SpawnCondition = "override_spawn_condition".GetStableHashCode();
@@ -104,14 +109,9 @@ public class SpawnAreaTweaks {
     return true;
   }
 
-
+  private static Character? Spawned = null;
   private static Vector3 GetCenterPoint(Character character, GameObject obj) {
-    if (SpawnHealth.HasValue)
-      character.SetMaxHealth(SpawnHealth.Value);
-    if (Enum.TryParse<Character.Faction>(SpawnFaction, true, out var faction)) {
-      character.m_faction = faction;
-      character.m_nview.GetZDO().Set(Faction, SpawnFaction);
-    }
+    Spawned = character;
     return character?.GetCenterPoint() ?? obj.transform.position;
   }
 
@@ -120,5 +120,19 @@ public class SpawnAreaTweaks {
     return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.GetCenterPoint))))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, 4))
       .Set(OpCodes.Call, Transpilers.EmitDelegate(GetCenterPoint).operand).InstructionEnumeration();
+  }
+
+  // Must be done here to override CLLC changes.
+  [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyPostfix, HarmonyPriority(Priority.VeryLow)]
+  static void ApplyChanges() {
+    if (Spawned == null) return;
+    if (SpawnHealth.HasValue)
+      Spawned.SetMaxHealth(SpawnHealth.Value);
+    if (Enum.TryParse<Character.Faction>(SpawnFaction, true, out var faction)) {
+      Spawned.m_faction = faction;
+      Spawned.m_nview.GetZDO().Set(Faction, SpawnFaction);
+    }
+    if (SpawnLevel.HasValue)
+      Spawned.SetLevel(SpawnLevel.Value);
   }
 }
