@@ -5,44 +5,54 @@ using System.Linq;
 using UnityEngine;
 
 namespace SpawnerTweaks;
-public class Helper {
-  public static float Float(string arg, float defaultValue) {
+public class Helper
+{
+  public static float Float(string arg, float defaultValue)
+  {
     if (!float.TryParse(arg, NumberStyles.Float, CultureInfo.InvariantCulture, out var result))
       return defaultValue;
     return result;
   }
-  public static float? Float(string arg) {
+  public static float? Float(string arg)
+  {
     if (!float.TryParse(arg, NumberStyles.Float, CultureInfo.InvariantCulture, out var result))
       return null;
     return result;
   }
-  public static int Int(string arg, int defaultValue) {
+  public static int Int(string arg, int defaultValue)
+  {
+
     if (!int.TryParse(arg, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
       return defaultValue;
     return result;
   }
-  public static int? Int(string arg) {
+  public static int? Int(string arg)
+  {
     if (!int.TryParse(arg, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
       return null;
     return result;
   }
 
-  public static GameObject? GetPrefab(string hashStr) {
+  public static GameObject? GetPrefab(string hashStr)
+  {
     if (int.TryParse(hashStr, out var hash)) return GetPrefab(hash);
     return null;
   }
-  public static GameObject? GetPrefab(int hash) {
+  public static GameObject? GetPrefab(int hash)
+  {
     if (hash == 0) return null;
     var prefab = ZNetScene.instance.GetPrefab(hash);
     if (!prefab) return null;
     return prefab;
   }
-  public static EffectList.EffectData? ParseEffect(string data) {
+  public static EffectList.EffectData? ParseEffect(string data)
+  {
     var split = data.Split(',');
     EffectList.EffectData effect = new();
     effect.m_prefab = GetPrefab(split[0]);
     if (effect.m_prefab == null) return null;
-    if (split.Length > 1 && int.TryParse(split[1], out var flag)) {
+    if (split.Length > 1 && int.TryParse(split[1], out var flag))
+    {
       effect.m_randomRotation = (flag & 1) > 0;
       effect.m_inheritParentRotation = (flag & 2) > 0;
       effect.m_scale = (flag & 4) > 0;
@@ -55,13 +65,48 @@ public class Helper {
       effect.m_childTransform = split[3];
     return effect;
   }
-  public static EffectList ParseEffects(string data) {
+  public static HitData.DamageModifiers ParseDamageModifiers(string data)
+  {
+    HitData.DamageModifiers modifiers = new();
+    var values = data.Split('|');
+    foreach (var value in values)
+    {
+      var split = value.Split(',');
+      if (split.Length < 2) continue;
+      var type = (HitData.DamageType)Int(split[0], 0);
+      var modifier = (HitData.DamageModifier)Int(split[1], 0);
+      if (type == HitData.DamageType.Blunt)
+        modifiers.m_blunt = modifier;
+      if (type == HitData.DamageType.Chop)
+        modifiers.m_chop = modifier;
+      if (type == HitData.DamageType.Fire)
+        modifiers.m_fire = modifier;
+      if (type == HitData.DamageType.Frost)
+        modifiers.m_frost = modifier;
+      if (type == HitData.DamageType.Lightning)
+        modifiers.m_lightning = modifier;
+      if (type == HitData.DamageType.Pickaxe)
+        modifiers.m_pickaxe = modifier;
+      if (type == HitData.DamageType.Pierce)
+        modifiers.m_pierce = modifier;
+      if (type == HitData.DamageType.Poison)
+        modifiers.m_poison = modifier;
+      if (type == HitData.DamageType.Slash)
+        modifiers.m_slash = modifier;
+      if (type == HitData.DamageType.Spirit)
+        modifiers.m_spirit = modifier;
+    }
+    return modifiers;
+  }
+  public static EffectList ParseEffects(string data)
+  {
     var effects = data.Split('|').Select(effect => ParseEffect(effect)!).Where(effect => effect != null);
     EffectList list = new();
     list.m_effectPrefabs = effects.ToArray();
     return list;
   }
-  public static SpawnArea.SpawnData? ParseSpawnData(string data) {
+  public static SpawnArea.SpawnData? ParseSpawnData(string data)
+  {
     var split = data.Split(',');
     SpawnArea.SpawnData spawn = new();
     spawn.m_prefab = GetPrefab(split[0]);
@@ -71,7 +116,8 @@ public class Helper {
     spawn.m_maxLevel = 1;
     if (split.Length > 1)
       spawn.m_weight = Float(split[1], 1f);
-    if (split.Length > 2) {
+    if (split.Length > 2)
+    {
       spawn.m_minLevel = Int(split[2], 1);
       spawn.m_maxLevel = Int(split[2], 1);
     }
@@ -79,13 +125,15 @@ public class Helper {
       spawn.m_maxLevel = Int(split[3], 1);
     return spawn;
   }
-  public static List<SpawnArea.SpawnData> ParseSpawnsData(string data) {
+  public static List<SpawnArea.SpawnData> ParseSpawnsData(string data)
+  {
     var spawns = data.Split('|').Select(spawn => ParseSpawnData(spawn)!).Where(spawn => spawn != null);
     return spawns.ToList();
   }
 
 
-  public static DropTable.DropData ParseDropData(string data) {
+  public static DropTable.DropData ParseDropData(string data)
+  {
     var split = data.Split(',');
     DropTable.DropData drop = new();
     drop.m_item = GetPrefab(split[0]);
@@ -94,7 +142,8 @@ public class Helper {
     drop.m_stackMax = 1;
     if (split.Length > 1)
       drop.m_weight = Float(split[1], 1f);
-    if (split.Length > 2) {
+    if (split.Length > 2)
+    {
       drop.m_stackMin = Int(split[2], 1);
       drop.m_stackMax = Int(split[2], 1);
     }
@@ -102,41 +151,48 @@ public class Helper {
       drop.m_stackMax = Int(split[3], 1);
     return drop;
   }
-  public static List<DropTable.DropData> ParseDropsData(string data) {
+  public static List<DropTable.DropData> ParseDropsData(string data)
+  {
     var drops = data.Split('|').Select(drop => ParseDropData(drop)).Where(drop => drop.m_item != null);
     return drops.ToList();
   }
 
-  public static void Float(ZNetView view, int hash, Action<float> action) {
+  public static void Float(ZNetView view, int hash, Action<float> action)
+  {
     if (view == null || !view.IsValid()) return;
     var value = view.GetZDO().GetFloat(hash, -1f);
     if (value < 0f) return;
     action(value);
   }
-  public static void Long(ZNetView view, int hash, Action<long> action) {
+  public static void Long(ZNetView view, int hash, Action<long> action)
+  {
     if (view == null || !view.IsValid()) return;
     var value = view.GetZDO().GetLong(hash, -1L);
     if (value < 0L) return;
     action(value);
   }
-  public static void Int(ZNetView view, int hash, Action<int> action) {
+  public static void Int(ZNetView view, int hash, Action<int> action)
+  {
     if (view == null || !view.IsValid()) return;
     var value = view.GetZDO().GetInt(hash, -1);
     if (value < 0) return;
     action(value);
   }
-  public static void Bool(ZNetView view, int hash, Action<bool> action) {
+  public static void Bool(ZNetView view, int hash, Action<bool> action)
+  {
     if (view == null || !view.IsValid()) return;
     var value = view.GetZDO().GetBool(hash, false);
     action(value);
   }
-  public static void String(ZNetView view, int hash, Action<string> action) {
+  public static void String(ZNetView view, int hash, Action<string> action)
+  {
     if (view == null || !view.IsValid()) return;
     var value = view.GetZDO().GetString(hash, "");
     if (value == "") return;
     action(value);
   }
-  public static void Prefab(ZNetView view, int hash, Action<GameObject> action) {
+  public static void Prefab(ZNetView view, int hash, Action<GameObject> action)
+  {
     if (view == null || !view.IsValid()) return;
     var value = view.GetZDO().GetInt(hash, 0);
     var prefab = Helper.GetPrefab(value);
@@ -144,7 +200,8 @@ public class Helper {
     action(prefab);
   }
 
-  public static int RollLevel(int min, int max, float chance) {
+  public static int RollLevel(int min, int max, float chance)
+  {
     var level = min;
     while (level < max && UnityEngine.Random.Range(0f, 100f) <= chance)
       level++;
@@ -153,5 +210,5 @@ public class Helper {
 
   public static bool Owner(ZNetView view) => view && view.IsValid() && view.IsOwner();
 
-  
+
 }
