@@ -16,9 +16,9 @@ public class ContainerAwake {
 
 [HarmonyPatch(typeof(Container), nameof(Container.AddDefaultItems))]
 public class ContainerAddDefaultItems {
-  static int MinAmount = "override_minamount".GetStableHashCode();
+  static int MinAmount = "override_minimum_amount".GetStableHashCode();
   // int
-  static int MaxAmount = "override_maxamount".GetStableHashCode();
+  static int MaxAmount = "override_maximum_amount".GetStableHashCode();
   // int
   static int Items = "override_items".GetStableHashCode();
   // id,weight,min,max|...

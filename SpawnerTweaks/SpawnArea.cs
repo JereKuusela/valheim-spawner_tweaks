@@ -134,13 +134,13 @@ public class SpawnAreaTweaks {
   [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyPostfix, HarmonyPriority(Priority.VeryLow)]
   static void ApplyChanges() {
     if (Spawned == null) return;
-    if (SpawnHealth.HasValue)
-      Spawned.SetMaxHealth(SpawnHealth.Value);
     if (Enum.TryParse<Character.Faction>(SpawnFaction, true, out var faction)) {
       Spawned.m_faction = faction;
       Spawned.m_nview.GetZDO().Set(Faction, SpawnFaction);
     }
     if (SpawnLevel.HasValue)
       Spawned.SetLevel(SpawnLevel.Value);
+    if (SpawnHealth.HasValue)
+      Spawned.SetMaxHealth(SpawnHealth.Value);
   }
 }
