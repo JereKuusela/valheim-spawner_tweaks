@@ -33,6 +33,7 @@ Donations: [Buy me a computer](https://www.buymeacoffee.com/jerekuusela)
 # Changelog
 
 - v1.6
+	- Adds custom data support for altars, spawn points and spawners.
 	- Adds support for changing faction, health and level of all spawner creatures.
 	- Adds support for configuring individual creatures.
 	- Fixes CLLC overriding spawner levels.

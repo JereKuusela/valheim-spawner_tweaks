@@ -209,6 +209,4 @@ public class Helper
   }
 
   public static bool Owner(ZNetView view) => view && view.IsValid() && view.IsOwner();
-
-
 }

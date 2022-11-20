@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
+using Service;
 using UnityEngine;
 
 namespace SpawnerTweaks;
 
 [HarmonyPatch(typeof(SpawnArea), nameof(SpawnArea.Awake))]
-public class SpawnAreaAwake {
+public class SpawnAreaAwake
+{
   static int SpawnEffect = "override_spawn_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
   static int Spawn = "override_spawn".GetStableHashCode();
@@ -30,8 +32,9 @@ public class SpawnAreaAwake {
   // float (meters)
   static int SpawnCondition = "override_spawn_condition".GetStableHashCode();
   // flag (1 = day only, 2 = night only, 4 = ground only)
-  
-  static void Postfix(SpawnArea __instance) {
+
+  static void Postfix(SpawnArea __instance)
+  {
     if (!Configuration.configSpawnArea.Value) return;
     var obj = __instance;
     var view = obj.m_nview;
@@ -51,7 +54,8 @@ public class SpawnAreaAwake {
 }
 
 [HarmonyPatch(typeof(SpawnArea))]
-public class SpawnAreaTweaks {
+public class SpawnAreaTweaks
+{
   static int MinLevel = "override_minimum_level".GetStableHashCode();
   // int
   static int MaxLevel = "override_maximum_level".GetStableHashCode();
@@ -64,43 +68,55 @@ public class SpawnAreaTweaks {
   // string
   static int Spawn = "override_spawn".GetStableHashCode();
   // prefab,weight,minLevel,maxLevel|prefab,weight,minLevel,maxLevel|...
-  static int Data = "override_data".GetStableHashCode();
-  // string
   private static float? SpawnHealth = null;
   private static string? SpawnFaction = null;
   private static int? SpawnLevel = null;
+  private static ZDO? SpawnData = null;
   [HarmonyPatch(nameof(SpawnArea.SelectWeightedPrefab)), HarmonyPostfix]
-  static void GetSpawnedData(SpawnArea __instance, SpawnArea.SpawnData __result) {
+  static void GetSpawnedData(SpawnArea __instance, SpawnArea.SpawnData __result)
+  {
     Spawned = null;
     SpawnHealth = null;
     SpawnFaction = null;
     SpawnLevel = null;
+    SpawnData = null;
     int? minLevel = null;
     int? maxLevel = null;
     Helper.Float(__instance.m_nview, Health, value => SpawnHealth = value);
     Helper.String(__instance.m_nview, Faction, value => SpawnFaction = value);
     Helper.Int(__instance.m_nview, MinLevel, value => minLevel = value);
     Helper.Int(__instance.m_nview, MaxLevel, value => maxLevel = value);
-    
-    Helper.String(__instance.m_nview, Spawn, value => {
+
+    Helper.String(__instance.m_nview, Spawn, value =>
+    {
       var index = __instance.m_prefabs.IndexOf(__result);
       var split = value.Split('|')[index].Split(',');
       if (split.Length > 2)
         minLevel = Helper.Int(split[2]);
       if (split.Length > 3)
         maxLevel = Helper.Int(split[3]);
-      if (split.Length > 4) {
+      if (split.Length > 4)
+      {
         var arg = Helper.Float(split[4]);
-        if (arg.HasValue) {
+        if (arg.HasValue)
+        {
           SpawnHealth = arg;
-        } else {
-          SpawnFaction = split[4];
+          if (split.Length > 5)
+            SpawnData = DataHelper.Load(split[5]);
+        }
+        else
+        {
+          if (Enum.TryParse<Character.Faction>(split[4], true, out var faction))
+            SpawnFaction = split[4];
+          else
+            SpawnData = DataHelper.Load(split[4]);
           if (split.Length > 5)
             SpawnHealth = Helper.Float(split[5]);
         }
       }
     });
-    if (minLevel.HasValue && maxLevel.HasValue) {
+    if (minLevel.HasValue && maxLevel.HasValue)
+    {
       SpawnLevel = Helper.RollLevel(minLevel.Value, maxLevel.Value, __instance.m_levelupChance);
     }
   }
@@ -108,7 +124,8 @@ public class SpawnAreaTweaks {
   static int SpawnCondition = "override_spawn_condition".GetStableHashCode();
   // string
   [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyPrefix]
-  static bool CheckTime(SpawnArea __instance) {
+  static bool CheckTime(SpawnArea __instance)
+  {
     if (!Configuration.configSpawnArea.Value) return true;
     var value = __instance.m_nview.GetZDO().GetInt(SpawnCondition, -1);
     if (value < 0) return true;
@@ -118,23 +135,45 @@ public class SpawnAreaTweaks {
   }
 
   private static Character? Spawned = null;
-  private static Vector3 GetCenterPoint(Character character, GameObject obj) {
+  private static Vector3 GetCenterPoint(Character character, GameObject obj)
+  {
     Spawned = character;
     return character?.GetCenterPoint() ?? obj.transform.position;
   }
 
   [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyTranspiler]
-  static IEnumerable<CodeInstruction> FixCenterPoint(IEnumerable<CodeInstruction> instructions) {
+  static IEnumerable<CodeInstruction> FixCenterPoint(IEnumerable<CodeInstruction> instructions)
+  {
     return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.GetCenterPoint))))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, 4))
       .Set(OpCodes.Call, Transpilers.EmitDelegate(GetCenterPoint).operand).InstructionEnumeration();
   }
 
+  static GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation)
+  {
+    if (SpawnData != null)
+      DataHelper.InitZDO(prefab, position, rotation, SpawnData);
+    var obj = UnityEngine.Object.Instantiate<GameObject>(prefab, position, rotation);
+    return obj;
+  }
+
+  [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyTranspiler]
+  static IEnumerable<CodeInstruction> SetData(IEnumerable<CodeInstruction> instructions)
+  {
+    return new CodeMatcher(instructions)
+      .MatchForward(false, new CodeMatch(OpCodes.Ldc_I4, 360))
+      .Advance(5)
+      .Set(OpCodes.Call, Transpilers.EmitDelegate(Instantiate).operand)
+      .InstructionEnumeration();
+  }
+
   // Must be done here to override CLLC changes.
   [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyPostfix, HarmonyPriority(Priority.VeryLow)]
-  static void ApplyChanges() {
+  static void ApplyChanges()
+  {
     if (Spawned == null) return;
-    if (Enum.TryParse<Character.Faction>(SpawnFaction, true, out var faction)) {
+    if (Enum.TryParse<Character.Faction>(SpawnFaction, true, out var faction))
+    {
       Spawned.m_faction = faction;
       Spawned.m_nview.GetZDO().Set(Faction, SpawnFaction);
     }

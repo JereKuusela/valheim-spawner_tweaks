@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
+using Service;
+using UnityEngine;
 
 namespace SpawnerTweaks;
 
 [HarmonyPatch(typeof(CreatureSpawner), nameof(CreatureSpawner.Awake))]
-public class CreatureSpawnerAwake {
+public class CreatureSpawnerAwake
+{
   static int Spawn = "override_spawn".GetStableHashCode();
   // prefab
   static int Respawn = "override_respawn".GetStableHashCode();
@@ -23,7 +26,8 @@ public class CreatureSpawnerAwake {
   // float (meters)
   static int SpawnEffect = "override_spawn_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static void HandleSpawn(CreatureSpawner obj) {
+  static void HandleSpawn(CreatureSpawner obj)
+  {
     var hash = obj.m_nview.GetZDO().GetInt(Spawn, 0);
     if (hash == 0) return;
     var prefab = ZNetScene.instance.GetPrefab(hash);
@@ -37,7 +41,8 @@ public class CreatureSpawnerAwake {
   static void SetTriggerNoise(CreatureSpawner obj) =>
     Helper.Float(obj.m_nview, TriggerNoise, value => obj.m_triggerNoise = value);
   static void SetSpawnCondition(CreatureSpawner obj) =>
-    Helper.Int(obj.m_nview, SpawnCondition, value => {
+    Helper.Int(obj.m_nview, SpawnCondition, value =>
+    {
       obj.m_spawnAtNight = true;
       obj.m_spawnAtDay = true;
       if (value == 1)
@@ -51,7 +56,8 @@ public class CreatureSpawnerAwake {
     Helper.Int(obj.m_nview, MaxLevel, value => obj.m_maxLevel = value);
   static void SetSpawnEffect(CreatureSpawner obj) =>
     Helper.String(obj.m_nview, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
-  static void Postfix(CreatureSpawner __instance) {
+  static void Postfix(CreatureSpawner __instance)
+  {
     if (!Configuration.configCreatureSpawner.Value) return;
     if (!__instance.m_nview || !__instance.m_nview.IsValid()) return;
     SetRespawn(__instance);
@@ -66,35 +72,66 @@ public class CreatureSpawnerAwake {
 }
 
 [HarmonyPatch(typeof(CreatureSpawner), nameof(CreatureSpawner.Spawn))]
-public class CreatureSpawnerSpawn {
+public class CreatureSpawnerSpawn
+{
   static int Health = "override_health".GetStableHashCode();
+  // float
   static int Faction = "override_faction".GetStableHashCode();
-  // float
-  // float
+  // string
   static int LevelChance = "override_level_chance".GetStableHashCode();
   // float (percent)
+  static int Data = "override_data".GetStableHashCode();
+  // string
+  private static ZDO? SpawnData = null;
 
-  static void Postfix(CreatureSpawner __instance, ZNetView __result) {
+  static void Prefix(CreatureSpawner __instance)
+  {
+    SpawnData = null;
+    Helper.String(__instance.m_nview, Data, value => SpawnData = DataHelper.Load(value));
+  }
+  static void Postfix(CreatureSpawner __instance, ZNetView __result)
+  {
     if (!Configuration.configCreatureSpawner.Value) return;
     if (!__result) return;
     var obj = __result.GetComponent<Character>();
     if (!obj) return;
-    Helper.Float(__instance.m_nview, LevelChance, levelChance => {
+    Helper.Float(__instance.m_nview, LevelChance, levelChance =>
+    {
       var level = Helper.RollLevel(__instance.m_minLevel, __instance.m_maxLevel, levelChance);
       obj.SetLevel(level);
     });
     Helper.Float(__instance.m_nview, Health, obj.SetMaxHealth);
-    Helper.String(__instance.m_nview, Faction, value => {
+    Helper.String(__instance.m_nview, Faction, value =>
+    {
       obj.m_nview.GetZDO().Set(Faction, value);
       if (Enum.TryParse<Character.Faction>(value, true, out var faction))
         obj.m_faction = faction;
     });
   }
+
+  static GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation)
+  {
+    if (SpawnData != null)
+      DataHelper.InitZDO(prefab, position, rotation, SpawnData);
+    var obj = UnityEngine.Object.Instantiate<GameObject>(prefab, position, rotation);
+    return obj;
+  }
+
+  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+  {
+    return new CodeMatcher(instructions)
+      .MatchForward(false, new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(CreatureSpawner), nameof(CreatureSpawner.m_creaturePrefab))))
+      .Advance(3)
+      .Set(OpCodes.Call, Transpilers.EmitDelegate(Instantiate).operand)
+      .InstructionEnumeration();
+  }
 }
 
 [HarmonyPatch(typeof(Character), nameof(Character.Awake))]
-public class DisableMaxHealthSetup {
-  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+public class DisableMaxHealthSetup
+{
+  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+  {
     return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Character), nameof(Character.SetupMaxHealth))))
       .Set(OpCodes.Call, Transpilers.EmitDelegate(((Character _) => { })).operand).InstructionEnumeration();
   }

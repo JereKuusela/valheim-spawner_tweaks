@@ -1,8 +1,9 @@
 using UnityEngine;
 
-namespace SpawnerTweaks;
+namespace Service;
 
-public class Data {
+public class DataHelper
+{
   public static void CopyData(ZDO from, ZDO to)
   {
     to.m_floats = from.m_floats;
@@ -114,18 +115,26 @@ public class Data {
     }
     zdo.ReleaseByteArrays();
   }
-  public static void InitZDO(Vector3 position, Quaternion rotation, ZDO data, ZNetView view)
+  public static ZDO? Load(string data)
   {
+    ZDO zdo = new();
+    if (data != "")
+    {
+      ZPackage pkg = new(data);
+      Deserialize(zdo, pkg);
+    }
+    return zdo;
+  }
+  public static void InitZDO(GameObject prefab, Vector3 position, Quaternion rotation, ZDO data)
+  {
+    if (!prefab.TryGetComponent<ZNetView>(out var view)) return;
     ZNetView.m_initZDO = ZDOMan.instance.CreateNewZDO(position);
-    Data.CopyData(data.Clone(), ZNetView.m_initZDO);
+    DataHelper.CopyData(data.Clone(), ZNetView.m_initZDO);
     ZNetView.m_initZDO.m_rotation = rotation;
     ZNetView.m_initZDO.m_type = view.m_type;
     ZNetView.m_initZDO.m_distant = view.m_distant;
     ZNetView.m_initZDO.m_persistent = view.m_persistent;
     ZNetView.m_initZDO.m_prefab = view.GetPrefabName().GetStableHashCode();
     ZNetView.m_initZDO.m_dataRevision = 1;
-  }
-  public static void ClearInitZDO() {
-    ZNetView.m_initZDO = null;
   }
 }

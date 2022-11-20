@@ -4,7 +4,8 @@ using Service;
 
 namespace SpawnerTweaks;
 [BepInPlugin(GUID, NAME, VERSION)]
-public class Plugin : BaseUnityPlugin {
+public class Plugin : BaseUnityPlugin
+{
   const string GUID = "spawner_tweaks";
   const string NAME = "Spawner Tweaks";
   const string VERSION = "1.6";
@@ -15,7 +16,8 @@ public class Plugin : BaseUnityPlugin {
     IsLocked = true,
     ModRequired = true
   };
-  public void Awake() {
+  public void Awake()
+  {
     ConfigWrapper wrapper = new("spawner_config", Config, ConfigSync);
     Configuration.Init(wrapper);
     new Harmony(GUID).PatchAll();

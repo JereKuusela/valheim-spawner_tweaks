@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
+using Service;
 using UnityEngine;
 
 namespace SpawnerTweaks;
 [HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.Awake))]
-public class OfferingBowlAwake {
+public class OfferingBowlAwake
+{
   static int Spawn = "override_spawn".GetStableHashCode();
   // prefab
   static int SpawnItem = "override_spawn_item".GetStableHashCode();
@@ -39,7 +41,8 @@ public class OfferingBowlAwake {
   // float (meters)
 
   static void SetSpawn(OfferingBowl obj, ZNetView view) =>
-    Helper.Prefab(view, Spawn, value => {
+    Helper.Prefab(view, Spawn, value =>
+    {
       var drop = value.GetComponent<ItemDrop>();
       obj.m_bossPrefab = null;
       obj.m_itemPrefab = null;
@@ -49,13 +52,15 @@ public class OfferingBowlAwake {
         obj.m_bossPrefab = value;
     });
   static void SetSpawnItem(OfferingBowl obj, ZNetView view) =>
-    Helper.Prefab(view, SpawnItem, value => {
+    Helper.Prefab(view, SpawnItem, value =>
+    {
       var drop = value.GetComponent<ItemDrop>();
       if (!drop) return;
       obj.m_bossItem = drop;
     });
   static void SetAmount(OfferingBowl obj, ZNetView view) =>
-    Helper.Int(view, Amount, value => {
+    Helper.Int(view, Amount, value =>
+    {
       obj.m_bossItems = value;
       obj.m_useItemStands = value == 0;
     });
@@ -66,12 +71,14 @@ public class OfferingBowlAwake {
   static void SetText(OfferingBowl obj, ZNetView view) =>
     Helper.String(view, Text, value => obj.m_useItemText = value);
   static void SetItemStandPrefix(OfferingBowl obj, ZNetView view) =>
-    Helper.String(view, ItemStandPrefix, value => {
+    Helper.String(view, ItemStandPrefix, value =>
+    {
       obj.m_useItemStands = true;
       obj.m_itemStandPrefix = value;
     });
   static void SetItemStandRange(OfferingBowl obj, ZNetView view) =>
-    Helper.Float(view, ItemStandRange, value => {
+    Helper.Float(view, ItemStandRange, value =>
+    {
       obj.m_useItemStands = true;
       obj.m_itemstandMaxRange = value;
     });
@@ -82,7 +89,8 @@ public class OfferingBowlAwake {
   static void SetSpawnMaxY(OfferingBowl obj, ZNetView view) =>
     Helper.Float(view, SpawnMaxY, value => obj.m_spawnBossMaxYDistance = value);
   static void SetItemOffset(OfferingBowl obj, ZNetView view) =>
-    Helper.String(view, ItemOffset, value => {
+    Helper.String(view, ItemOffset, value =>
+    {
       var split = value.Split(',');
       var pos = obj.m_itemSpawnPoint.localPosition;
       pos.x = Helper.Float(split[0], pos.x);
@@ -98,7 +106,8 @@ public class OfferingBowlAwake {
     Helper.String(view, SpawnEffect, value => obj.m_spawnBossDoneffects = Helper.ParseEffects(value));
   static void SetUseEffect(OfferingBowl obj, ZNetView view) =>
     Helper.String(view, UseEffect, value => obj.m_fuelAddedEffects = Helper.ParseEffects(value));
-  static void EnsureItemSpawnPoint(OfferingBowl obj) {
+  static void EnsureItemSpawnPoint(OfferingBowl obj)
+  {
     if (obj.m_itemSpawnPoint) return;
     GameObject spawnPoint = new();
     spawnPoint.transform.parent = obj.transform;
@@ -107,7 +116,8 @@ public class OfferingBowlAwake {
     obj.m_itemSpawnPoint = spawnPoint.transform;
 
   }
-  public static void Postfix(OfferingBowl __instance) {
+  public static void Postfix(OfferingBowl __instance)
+  {
     if (!Configuration.configOfferingBowl.Value) return;
     var view = __instance.GetComponentInParent<ZNetView>();
     if (!view || !view.IsValid()) return;
@@ -132,24 +142,30 @@ public class OfferingBowlAwake {
 
 
 [HarmonyPatch(typeof(LocationProxy), nameof(LocationProxy.SpawnLocation))]
-public class UpdateOfferingBowls {
-  static void Postfix(LocationProxy __instance, bool __result) {
+public class UpdateOfferingBowls
+{
+  static void Postfix(LocationProxy __instance, bool __result)
+  {
     if (!__result || !Configuration.configOfferingBowl.Value) return;
     var offeringBowl = __instance.m_instance?.GetComponentInChildren<OfferingBowl>();
     if (offeringBowl != null) OfferingBowlAwake.Postfix(offeringBowl);
   }
 }
 
-public static class OfferingBowlHelper {
+public static class OfferingBowlHelper
+{
   static int Respawn = "override_respawn".GetStableHashCode();
   // float (minutes)
   static int SpawnTime = "spawn_time".GetStableHashCode();
-  public static bool CanRespawn(OfferingBowl obj) {
+  public static bool CanRespawn(OfferingBowl obj)
+  {
     if (!Configuration.configOfferingBowl.Value) return true;
     var view = obj.GetComponentInParent<ZNetView>();
     var ret = true;
-    Helper.Float(view, Respawn, respawn => {
-      Helper.Long(view, SpawnTime, spawnTime => {
+    Helper.Float(view, Respawn, respawn =>
+    {
+      Helper.Long(view, SpawnTime, spawnTime =>
+      {
         var now = ZNet.instance.GetTime();
         var date = new DateTime(spawnTime);
         ret = respawn > 0f && (now - date).TotalMinutes >= respawn;
@@ -160,19 +176,23 @@ public static class OfferingBowlHelper {
 }
 
 [HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.Interact))]
-public class OfferingBowlRespawnInteract {
+public class OfferingBowlRespawnInteract
+{
   static bool Prefix(OfferingBowl __instance) => OfferingBowlHelper.CanRespawn(__instance);
 }
 
 [HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.UseItem))]
-public class OfferingBowlRespawnUseItem {
+public class OfferingBowlRespawnUseItem
+{
   static bool Prefix(OfferingBowl __instance) => OfferingBowlHelper.CanRespawn(__instance);
 }
 
 [HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.SpawnBoss))]
-public class OfferingBowlSetSpawnTime {
+public class OfferingBowlSetSpawnTime
+{
   static int SpawnTime = "spawn_time".GetStableHashCode();
-  static void Postfix(OfferingBowl __instance, bool __result) {
+  static void Postfix(OfferingBowl __instance, bool __result)
+  {
     if (!__result) return;
     var view = __instance.GetComponentInParent<ZNetView>();
     if (!view) return;
@@ -181,7 +201,8 @@ public class OfferingBowlSetSpawnTime {
 }
 
 [HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.DelayedSpawnBoss))]
-public class OfferingBowlSetupSpawn {
+public class OfferingBowlSetupSpawn
+{
   static int MinLevel = "override_minimum_level".GetStableHashCode();
   // int
   static int MaxLevel = "override_maximum_level".GetStableHashCode();
@@ -192,7 +213,18 @@ public class OfferingBowlSetupSpawn {
   // float
   static int Faction = "override_faction".GetStableHashCode();
   // float
-  static void Setup(BaseAI baseAI, OfferingBowl bowl) {
+  static int Data = "override_data".GetStableHashCode();
+  // string
+  private static ZDO? SpawnData = null;
+
+  static void Prefix(OfferingBowl __instance)
+  {
+    SpawnData = null;
+    var view = __instance.GetComponentInParent<ZNetView>();
+    Helper.String(view, Data, value => SpawnData = DataHelper.Load(value));
+  }
+  static void Setup(BaseAI baseAI, OfferingBowl bowl)
+  {
     if (!Configuration.configOfferingBowl.Value) return;
     var obj = baseAI.GetComponent<Character>();
     if (!obj) return;
@@ -206,14 +238,28 @@ public class OfferingBowlSetupSpawn {
     var level = Helper.RollLevel(minLevel, maxLevel, levelChance);
     if (level > 1) obj.SetLevel(level);
     Helper.Float(view, Health, obj.SetMaxHealth);
-    Helper.String(view, Faction, value => {
+    Helper.String(view, Faction, value =>
+    {
       obj.m_nview.GetZDO().Set(Faction, value);
       if (Enum.TryParse<Character.Faction>(value, true, out var faction))
         obj.m_faction = faction;
     });
   }
-  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
-    return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.SetPatrolPoint))))
+  static GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation)
+  {
+    if (SpawnData != null)
+      DataHelper.InitZDO(prefab, position, rotation, SpawnData);
+    var obj = UnityEngine.Object.Instantiate<GameObject>(prefab, position, rotation);
+    return obj;
+  }
+
+  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+  {
+    return new CodeMatcher(instructions)
+      .MatchForward(false, new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(OfferingBowl), nameof(OfferingBowl.m_bossSpawnPoint))))
+      .Advance(2)
+      .Set(OpCodes.Call, Transpilers.EmitDelegate(Instantiate).operand)
+      .MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.SetPatrolPoint))))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Call, Transpilers.EmitDelegate(Setup).operand))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))

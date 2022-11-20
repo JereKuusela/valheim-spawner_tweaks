@@ -5,7 +5,8 @@ using HarmonyLib;
 namespace SpawnerTweaks;
 
 [HarmonyPatch(typeof(Pickable), nameof(Pickable.Awake))]
-public class PickableAwake {
+public class PickableAwake
+{
   static int Spawn = "override_spawn".GetStableHashCode();
   // prefab
   static int Respawn = "override_respawn".GetStableHashCode();
@@ -31,7 +32,8 @@ public class PickableAwake {
   static void SetUseEffect(Pickable obj, ZNetView view) =>
     Helper.String(view, UseEffect, value => obj.m_pickEffector = Helper.ParseEffects(value));
   // Must be prefix because Awake starts respawn loop only if respawning.
-  static void Prefix(Pickable __instance) {
+  static void Prefix(Pickable __instance)
+  {
     if (!Configuration.configPickable.Value) return;
     var view = __instance.GetComponent<ZNetView>();
     if (!view || !view.IsValid()) return;
@@ -45,18 +47,23 @@ public class PickableAwake {
 }
 
 [HarmonyPatch(typeof(Pickable), nameof(Pickable.Drop))]
-public class PickableDrop {
+public class PickableDrop
+{
   private static void SetStack(ItemDrop obj, int amount) => obj?.SetStack(amount);
-  static IEnumerable<CodeInstruction> Transpilera(IEnumerable<CodeInstruction> instructions) {
+  static IEnumerable<CodeInstruction> Transpilera(IEnumerable<CodeInstruction> instructions)
+  {
     return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ItemDrop), nameof(ItemDrop.SetStack))))
       .Set(OpCodes.Call, Transpilers.EmitDelegate(SetStack).operand).InstructionEnumeration();
   }
 }
 
 [HarmonyPatch(typeof(Pickable), nameof(Pickable.GetHoverName))]
-public class GetHoverName {
-  static bool Prefix(Pickable __instance, ref string __result) {
-    if (string.IsNullOrEmpty(__instance.m_overrideName) && !__instance.m_itemPrefab) {
+public class GetHoverName
+{
+  static bool Prefix(Pickable __instance, ref string __result)
+  {
+    if (string.IsNullOrEmpty(__instance.m_overrideName) && !__instance.m_itemPrefab)
+    {
       __result = Utils.GetPrefabName(__instance.gameObject);
       return false;
     }
