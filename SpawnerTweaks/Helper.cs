@@ -151,9 +151,38 @@ public class Helper
       drop.m_stackMax = Int(split[3], 1);
     return drop;
   }
+  public static CharacterDrop.Drop ParseCharacterDropData(string data)
+  {
+    var split = data.Split(',');
+    CharacterDrop.Drop drop = new();
+    drop.m_prefab = GetPrefab(split[0]);
+    drop.m_chance = 1f;
+    drop.m_amountMin = 1;
+    drop.m_amountMax = 1;
+    if (split.Length > 1)
+      drop.m_chance = Float(split[1], 1f);
+    if (split.Length > 2)
+    {
+      drop.m_amountMin = Int(split[2], 1);
+      drop.m_amountMax = Int(split[2], 1) + 1; // Valheim bug.
+    }
+    if (split.Length > 3)
+      drop.m_amountMax = Int(split[3], 1) + 1; // Valheim bug.
+    if (split.Length > 4)
+    {
+      drop.m_levelMultiplier = (Int(split[4], 0) & 1) > 0;
+      drop.m_onePerPlayer = (Int(split[4], 0) & 2) > 0;
+    }
+    return drop;
+  }
   public static List<DropTable.DropData> ParseDropsData(string data)
   {
     var drops = data.Split('|').Select(drop => ParseDropData(drop)).Where(drop => drop.m_item != null);
+    return drops.ToList();
+  }
+  public static List<CharacterDrop.Drop> ParseCharacterDropsData(string data)
+  {
+    var drops = data.Split('|').Select(drop => ParseCharacterDropData(drop)).Where(drop => drop.m_prefab != null);
     return drops.ToList();
   }
 
