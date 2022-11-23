@@ -26,6 +26,8 @@ public class CreatureSpawnerAwake
   // float (meters)
   static int SpawnEffect = "override_spawn_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
+  static int LevelChance = "override_level_chance".GetStableHashCode();
+  // float (percent)
   static void HandleSpawn(CreatureSpawner obj)
   {
     var hash = obj.m_nview.GetZDO().GetInt(Spawn, 0);
@@ -34,14 +36,18 @@ public class CreatureSpawnerAwake
     if (!prefab) return;
     obj.m_creaturePrefab = prefab;
   }
-  static void SetRespawn(CreatureSpawner obj) =>
-    Helper.Float(obj.m_nview, Respawn, value => obj.m_respawnTimeMinuts = value);
-  static void SetTriggerDistance(CreatureSpawner obj) =>
-    Helper.Float(obj.m_nview, TriggerDistance, value => obj.m_triggerDistance = value);
-  static void SetTriggerNoise(CreatureSpawner obj) =>
-    Helper.Float(obj.m_nview, TriggerNoise, value => obj.m_triggerNoise = value);
-  static void SetSpawnCondition(CreatureSpawner obj) =>
-    Helper.Int(obj.m_nview, SpawnCondition, value =>
+
+  static void Postfix(CreatureSpawner __instance)
+  {
+    if (!Configuration.configCreatureSpawner.Value) return;
+    var obj = __instance;
+    var view = obj.m_nview;
+    if (!view || !view.IsValid()) return;
+    Helper.Float(view, Respawn, value => obj.m_respawnTimeMinuts = value);
+    HandleSpawn(__instance);
+    Helper.Int(view, MaxLevel, value => obj.m_maxLevel = value);
+    Helper.Int(view, MinLevel, value => obj.m_minLevel = value);
+    Helper.Int(view, SpawnCondition, value =>
     {
       obj.m_spawnAtNight = true;
       obj.m_spawnAtDay = true;
@@ -50,24 +56,10 @@ public class CreatureSpawnerAwake
       if (value == 2)
         obj.m_spawnAtDay = false;
     });
-  static void SetMinLevel(CreatureSpawner obj) =>
-    Helper.Int(obj.m_nview, MinLevel, value => obj.m_minLevel = value);
-  static void SetMaxLevel(CreatureSpawner obj) =>
-    Helper.Int(obj.m_nview, MaxLevel, value => obj.m_maxLevel = value);
-  static void SetSpawnEffect(CreatureSpawner obj) =>
-    Helper.String(obj.m_nview, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
-  static void Postfix(CreatureSpawner __instance)
-  {
-    if (!Configuration.configCreatureSpawner.Value) return;
-    if (!__instance.m_nview || !__instance.m_nview.IsValid()) return;
-    SetRespawn(__instance);
-    HandleSpawn(__instance);
-    SetMaxLevel(__instance);
-    SetMinLevel(__instance);
-    SetSpawnCondition(__instance);
-    SetTriggerDistance(__instance);
-    SetTriggerNoise(__instance);
-    SetSpawnEffect(__instance);
+    Helper.Float(view, TriggerDistance, value => obj.m_triggerDistance = value);
+    Helper.Float(view, TriggerNoise, value => obj.m_triggerNoise = value);
+    Helper.Float(view, LevelChance, value => obj.m_levelupChance = value);
+    Helper.String(view, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
   }
 }
 
@@ -78,8 +70,6 @@ public class CreatureSpawnerSpawn
   // float
   static int Faction = "override_faction".GetStableHashCode();
   // string
-  static int LevelChance = "override_level_chance".GetStableHashCode();
-  // float (percent)
   static int Data = "override_data".GetStableHashCode();
   // string
   private static ZDO? SpawnData = null;
@@ -95,11 +85,6 @@ public class CreatureSpawnerSpawn
     if (!__result) return;
     var obj = __result.GetComponent<Character>();
     if (!obj) return;
-    Helper.Float(__instance.m_nview, LevelChance, levelChance =>
-    {
-      var level = Helper.RollLevel(__instance.m_minLevel, __instance.m_maxLevel, levelChance);
-      obj.SetLevel(level);
-    });
     Helper.Float(__instance.m_nview, Health, obj.SetMaxHealth);
     Helper.String(__instance.m_nview, Faction, value =>
     {
