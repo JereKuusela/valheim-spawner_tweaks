@@ -6,8 +6,8 @@ using Service;
 using UnityEngine;
 
 namespace SpawnerTweaks;
-[HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.Awake))]
-public class OfferingBowlAwake
+[HarmonyPatch(typeof(OfferingBowl))]
+public class OfferingBowlPatches
 {
   static int Spawn = "override_spawn".GetStableHashCode();
   // prefab
@@ -39,6 +39,21 @@ public class OfferingBowlAwake
   // string
   static int ItemStandRange = "override_item_stand_range".GetStableHashCode();
   // float (meters)
+  static int Respawn = "override_respawn".GetStableHashCode();
+  // float (minutes)
+  static int SpawnTime = "spawn_time".GetStableHashCode();
+  static int MinLevel = "override_minimum_level".GetStableHashCode();
+  // int
+  static int MaxLevel = "override_maximum_level".GetStableHashCode();
+  // int
+  static int LevelChance = "override_level_chance".GetStableHashCode();
+  // float (percent)
+  static int Health = "override_health".GetStableHashCode();
+  // float
+  static int Faction = "override_faction".GetStableHashCode();
+  // float
+  static int Data = "override_data".GetStableHashCode();
+  // string
 
   static void SetSpawn(OfferingBowl obj, ZNetView view) =>
     Helper.Prefab(view, Spawn, value =>
@@ -116,7 +131,9 @@ public class OfferingBowlAwake
     obj.m_itemSpawnPoint = spawnPoint.transform;
 
   }
-  public static void Postfix(OfferingBowl __instance)
+
+  [HarmonyPatch(nameof(OfferingBowl.Awake)), HarmonyPostfix]
+  public static void Setup(OfferingBowl __instance)
   {
     if (!Configuration.configOfferingBowl.Value) return;
     var view = __instance.GetComponentInParent<ZNetView>();
@@ -138,25 +155,7 @@ public class OfferingBowlAwake
     SetSpawnEffect(__instance, view);
     SetUseEffect(__instance, view);
   }
-}
 
-
-[HarmonyPatch(typeof(LocationProxy), nameof(LocationProxy.SpawnLocation))]
-public class UpdateOfferingBowls
-{
-  static void Postfix(LocationProxy __instance, bool __result)
-  {
-    if (!__result || !Configuration.configOfferingBowl.Value) return;
-    var offeringBowl = __instance.m_instance?.GetComponentInChildren<OfferingBowl>();
-    if (offeringBowl != null) OfferingBowlAwake.Postfix(offeringBowl);
-  }
-}
-
-public static class OfferingBowlHelper
-{
-  static int Respawn = "override_respawn".GetStableHashCode();
-  // float (minutes)
-  static int SpawnTime = "spawn_time".GetStableHashCode();
   public static bool CanRespawn(OfferingBowl obj)
   {
     if (!Configuration.configOfferingBowl.Value) return true;
@@ -173,57 +172,32 @@ public static class OfferingBowlHelper
     });
     return ret;
   }
-}
 
-[HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.Interact))]
-public class OfferingBowlRespawnInteract
-{
-  static bool Prefix(OfferingBowl __instance) => OfferingBowlHelper.CanRespawn(__instance);
-}
+  [HarmonyPatch(nameof(OfferingBowl.Interact)), HarmonyPrefix]
+  static bool CheckBossRespawn(OfferingBowl __instance) => CanRespawn(__instance);
 
-[HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.UseItem))]
-public class OfferingBowlRespawnUseItem
-{
-  static bool Prefix(OfferingBowl __instance) => OfferingBowlHelper.CanRespawn(__instance);
-}
+  [HarmonyPatch(nameof(OfferingBowl.UseItem)), HarmonyPrefix]
+  static bool CheckItemRespawn(OfferingBowl __instance) => CanRespawn(__instance);
 
-[HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.SpawnBoss))]
-public class OfferingBowlSetSpawnTime
-{
-  static int SpawnTime = "spawn_time".GetStableHashCode();
-  static void Postfix(OfferingBowl __instance, bool __result)
+  [HarmonyPatch(nameof(OfferingBowl.SpawnBoss)), HarmonyPostfix]
+  static void SetSpawnTime(OfferingBowl __instance, bool __result)
   {
     if (!__result) return;
     var view = __instance.GetComponentInParent<ZNetView>();
     if (!view) return;
     view.GetZDO().Set(SpawnTime, ZNet.instance.GetTime().Ticks);
   }
-}
 
-[HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.DelayedSpawnBoss))]
-public class OfferingBowlSetupSpawn
-{
-  static int MinLevel = "override_minimum_level".GetStableHashCode();
-  // int
-  static int MaxLevel = "override_maximum_level".GetStableHashCode();
-  // int
-  static int LevelChance = "override_level_chance".GetStableHashCode();
-  // float (percent)
-  static int Health = "override_health".GetStableHashCode();
-  // float
-  static int Faction = "override_faction".GetStableHashCode();
-  // float
-  static int Data = "override_data".GetStableHashCode();
-  // string
   private static ZDO? SpawnData = null;
 
-  static void Prefix(OfferingBowl __instance)
+  [HarmonyPatch(nameof(OfferingBowl.DelayedSpawnBoss)), HarmonyPrefix]
+  static void GetValues(OfferingBowl __instance)
   {
     SpawnData = null;
     var view = __instance.GetComponentInParent<ZNetView>();
     Helper.String(view, Data, value => SpawnData = DataHelper.Load(value));
   }
-  static void Setup(BaseAI baseAI, OfferingBowl bowl)
+  static void SetupSpawn(BaseAI baseAI, OfferingBowl bowl)
   {
     if (!Configuration.configOfferingBowl.Value) return;
     var obj = baseAI.GetComponent<Character>();
@@ -253,7 +227,8 @@ public class OfferingBowlSetupSpawn
     return obj;
   }
 
-  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+  [HarmonyPatch(nameof(OfferingBowl.DelayedSpawnBoss)), HarmonyTranspiler]
+  static IEnumerable<CodeInstruction> SetData(IEnumerable<CodeInstruction> instructions)
   {
     return new CodeMatcher(instructions)
       .MatchForward(false, new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(OfferingBowl), nameof(OfferingBowl.m_bossSpawnPoint))))
@@ -261,8 +236,19 @@ public class OfferingBowlSetupSpawn
       .Set(OpCodes.Call, Transpilers.EmitDelegate(Instantiate).operand)
       .MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.SetPatrolPoint))))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
-      .InsertAndAdvance(new CodeInstruction(OpCodes.Call, Transpilers.EmitDelegate(Setup).operand))
+      .InsertAndAdvance(new CodeInstruction(OpCodes.Call, Transpilers.EmitDelegate(SetupSpawn).operand))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
       .InstructionEnumeration();
+  }
+}
+
+[HarmonyPatch(typeof(LocationProxy), nameof(LocationProxy.SpawnLocation))]
+public class UpdateOfferingBowls
+{
+  static void Postfix(LocationProxy __instance, bool __result)
+  {
+    if (!__result || !Configuration.configOfferingBowl.Value) return;
+    var offeringBowl = __instance.m_instance?.GetComponentInChildren<OfferingBowl>();
+    if (offeringBowl != null) OfferingBowlPatches.Setup(offeringBowl);
   }
 }

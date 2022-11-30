@@ -7,8 +7,8 @@ using UnityEngine;
 
 namespace SpawnerTweaks;
 
-[HarmonyPatch(typeof(CreatureSpawner), nameof(CreatureSpawner.Awake))]
-public class CreatureSpawnerAwake
+[HarmonyPatch(typeof(CreatureSpawner))]
+public class CreatureSpawnerPatches
 {
   static int Spawn = "override_spawn".GetStableHashCode();
   // prefab
@@ -28,6 +28,13 @@ public class CreatureSpawnerAwake
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
   static int LevelChance = "override_level_chance".GetStableHashCode();
   // float (percent)
+  static int Health = "override_health".GetStableHashCode();
+  // float
+  static int Faction = "override_faction".GetStableHashCode();
+  // string
+  static int Data = "override_data".GetStableHashCode();
+  // string
+
   static void HandleSpawn(CreatureSpawner obj)
   {
     var hash = obj.m_nview.GetZDO().GetInt(Spawn, 0);
@@ -37,7 +44,8 @@ public class CreatureSpawnerAwake
     obj.m_creaturePrefab = prefab;
   }
 
-  static void Postfix(CreatureSpawner __instance)
+  [HarmonyPatch(nameof(CreatureSpawner.Awake)), HarmonyPostfix]
+  static void Setup(CreatureSpawner __instance)
   {
     if (!Configuration.configCreatureSpawner.Value) return;
     var obj = __instance;
@@ -58,28 +66,22 @@ public class CreatureSpawnerAwake
     });
     Helper.Float(view, TriggerDistance, value => obj.m_triggerDistance = value);
     Helper.Float(view, TriggerNoise, value => obj.m_triggerNoise = value);
-    Helper.Float(view, LevelChance, value => obj.m_levelupChance = value);
+    //Helper.Float(view, LevelChance, value => obj.m_levelupChance = value);
     Helper.String(view, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
   }
-}
 
-[HarmonyPatch(typeof(CreatureSpawner), nameof(CreatureSpawner.Spawn))]
-public class CreatureSpawnerSpawn
-{
-  static int Health = "override_health".GetStableHashCode();
-  // float
-  static int Faction = "override_faction".GetStableHashCode();
-  // string
-  static int Data = "override_data".GetStableHashCode();
-  // string
   private static ZDO? SpawnData = null;
 
-  static void Prefix(CreatureSpawner __instance)
+
+  [HarmonyPatch(nameof(CreatureSpawner.Spawn)), HarmonyPrefix]
+  static void GetValues(CreatureSpawner __instance)
   {
     SpawnData = null;
     Helper.String(__instance.m_nview, Data, value => SpawnData = DataHelper.Load(value));
   }
-  static void Postfix(CreatureSpawner __instance, ZNetView __result)
+
+  [HarmonyPatch(nameof(CreatureSpawner.Spawn)), HarmonyPostfix]
+  static void SetupSpawn(CreatureSpawner __instance, ZNetView __result)
   {
     if (!Configuration.configCreatureSpawner.Value) return;
     if (!__result) return;
@@ -102,7 +104,8 @@ public class CreatureSpawnerSpawn
     return obj;
   }
 
-  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+  [HarmonyPatch(nameof(CreatureSpawner.Spawn)), HarmonyTranspiler]
+  static IEnumerable<CodeInstruction> SetupData(IEnumerable<CodeInstruction> instructions)
   {
     return new CodeMatcher(instructions)
       .MatchForward(false, new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(CreatureSpawner), nameof(CreatureSpawner.m_creaturePrefab))))
@@ -112,12 +115,8 @@ public class CreatureSpawnerSpawn
   }
 }
 
-[HarmonyPatch(typeof(Character), nameof(Character.Awake))]
-public class DisableMaxHealthSetup
+[HarmonyPatch(typeof(CreatureSpawner), nameof(CreatureSpawner.Spawn))]
+public class CreatureSpawnerSpawn
 {
-  static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-  {
-    return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Character), nameof(Character.SetupMaxHealth))))
-      .Set(OpCodes.Call, Transpilers.EmitDelegate(((Character _) => { })).operand).InstructionEnumeration();
-  }
+
 }

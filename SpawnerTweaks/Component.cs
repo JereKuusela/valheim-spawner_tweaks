@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace SpawnerTweaks;
 
-[HarmonyPatch(typeof(ZNetView), nameof(ZNetView.Awake))]
-public class ZNetViewAwake
+[HarmonyPatch(typeof(ZNetView))]
+public class ComponentPatches
 {
   static int HashComponent = "override_component".GetStableHashCode();
   static void HandleComponent(ZNetView view)
@@ -23,7 +23,8 @@ public class ZNetViewAwake
       if (value == "-fireplace" && view.gameObject.GetComponent<Fireplace>()) Object.Destroy(view.GetComponent<Fireplace>());
     }
   }
-  static void Postfix(ZNetView __instance)
+  [HarmonyPatch(nameof(ZNetView.Awake)), HarmonyPostfix]
+  static void Setup(ZNetView __instance)
   {
     if (!Configuration.configComponent.Value) return;
     if (!__instance || !__instance.IsValid()) return;

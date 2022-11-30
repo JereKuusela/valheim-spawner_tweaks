@@ -1,7 +1,8 @@
 using BepInEx.Configuration;
 using Service;
 namespace SpawnerTweaks;
-public class Configuration {
+public class Configuration
+{
 #nullable disable
   public static ConfigEntry<bool> configOfferingBowl;
   public static ConfigEntry<bool> configComponent;
@@ -9,11 +10,15 @@ public class Configuration {
   public static ConfigEntry<bool> configContainer;
   public static ConfigEntry<bool> configItemStand;
   public static ConfigEntry<bool> configSpawnArea;
+  public static ConfigEntry<bool> configCharacter;
+  public static ConfigEntry<bool> configCharacterTamed;
+  public static ConfigEntry<bool> configTamedCommandControl;
   public static ConfigEntry<bool> configCreatureSpawner;
   public static ConfigEntry<bool> configNoCreatureSpawnerSuppression;
   public static ConfigEntry<bool> configNoCreatureRespawnerSuppression;
 #nullable enable
-  public static void Init(ConfigWrapper wrapper) {
+  public static void Init(ConfigWrapper wrapper)
+  {
     var section = "1. General";
     configNoCreatureSpawnerSuppression = wrapper.Bind(section, "No spawn point suppression (one time)", true, "One time spawn points can't be suppressed with player base (even when configured to respawn).");
     configNoCreatureSpawnerSuppression.SettingChanged += (s, e) => NoSuppression.Update();
@@ -22,6 +27,9 @@ public class Configuration {
     configCreatureSpawner = wrapper.Bind(section, "Spawn points", true, "Spawn point properties can be overridden.");
     configComponent = wrapper.Bind(section, "Components", true, "Altars, pickables, spawn points and spawners can be attached to any object.");
     configPickable = wrapper.Bind(section, "Pickables", true, "Pickable properties can be overridden.");
+    configCharacter = wrapper.Bind(section, "Creatures", true, "Creature properties can be overridden.");
+    configCharacterTamed = wrapper.Bind(section, "Tamed", true, "All tamed creatures can be controlled.");
+    configTamedCommandControl = wrapper.Bind(section, "Tamed control", true, "Non-default tamed creatures can be controlled only by admins (or creator).");
     configContainer = wrapper.Bind(section, "Chests", true, "Chest properties can be overridden.");
     configItemStand = wrapper.Bind(section, "Item stands", true, "Item stand properties can be overridden.");
     configSpawnArea = wrapper.Bind(section, "Spawners", true, "Spawner properties can be overridden.");

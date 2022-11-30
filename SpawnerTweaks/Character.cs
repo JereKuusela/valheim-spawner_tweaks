@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using HarmonyLib;
 
 namespace SpawnerTweaks;
 
-[HarmonyPatch(typeof(Character), nameof(Character.Awake))]
-public class CharacterAwake
+[HarmonyPatch(typeof(Character))]
+public class CharacterPatches
 {
   static int Faction = "override_faction".GetStableHashCode();
   // string
@@ -16,8 +18,11 @@ public class CharacterAwake
   // type,modifier|...
   static int Items = "override_items".GetStableHashCode();
   // id,weight,min,max|...
-  static void Postfix(Character __instance)
+
+  [HarmonyPatch(nameof(Character.Awake)), HarmonyPostfix]
+  static void Setup(Character __instance)
   {
+    if (!Configuration.configCharacter.Value) return;
     Helper.String(__instance.m_nview, Faction, value =>
     {
       if (Enum.TryParse<Character.Faction>(value, true, out var faction))
@@ -28,5 +33,12 @@ public class CharacterAwake
     Helper.String(__instance.m_nview, Resistances, value => __instance.m_damageModifiers = Helper.ParseDamageModifiers(value));
     if (__instance.TryGetComponent<CharacterDrop>(out var drop))
       Helper.String(__instance.m_nview, Items, value => drop.m_drops = Helper.ParseCharacterDropsData(value));
+  }
+
+  [HarmonyPatch(nameof(Character.Awake)), HarmonyTranspiler]
+  static IEnumerable<CodeInstruction> DisableMaxHealthSetup(IEnumerable<CodeInstruction> instructions)
+  {
+    return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Character), nameof(Character.SetupMaxHealth))))
+      .Set(OpCodes.Call, Transpilers.EmitDelegate(((Character _) => { })).operand).InstructionEnumeration();
   }
 }

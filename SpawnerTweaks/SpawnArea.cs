@@ -7,8 +7,8 @@ using UnityEngine;
 
 namespace SpawnerTweaks;
 
-[HarmonyPatch(typeof(SpawnArea), nameof(SpawnArea.Awake))]
-public class SpawnAreaAwake
+[HarmonyPatch(typeof(SpawnArea))]
+public class SpawnAreaPatches
 {
   static int SpawnEffect = "override_spawn_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
@@ -32,8 +32,17 @@ public class SpawnAreaAwake
   // float (meters)
   static int SpawnCondition = "override_spawn_condition".GetStableHashCode();
   // flag (1 = day only, 2 = night only, 4 = ground only)
+  static int MinLevel = "override_minimum_level".GetStableHashCode();
+  // int
+  static int MaxLevel = "override_maximum_level".GetStableHashCode();
+  // float (percent)
+  static int Health = "override_health".GetStableHashCode();
+  // float
+  static int Faction = "override_faction".GetStableHashCode();
+  // string
 
-  static void Postfix(SpawnArea __instance)
+  [HarmonyPatch(nameof(SpawnArea.Awake)), HarmonyPostfix]
+  static void Setup(SpawnArea __instance)
   {
     if (!Configuration.configSpawnArea.Value) return;
     var obj = __instance;
@@ -51,23 +60,8 @@ public class SpawnAreaAwake
     Helper.String(view, Spawn, value => obj.m_prefabs = Helper.ParseSpawnsData(value));
     Helper.Int(view, SpawnCondition, value => obj.m_onGroundOnly = (value & 4) > 0);
   }
-}
 
-[HarmonyPatch(typeof(SpawnArea))]
-public class SpawnAreaTweaks
-{
-  static int MinLevel = "override_minimum_level".GetStableHashCode();
-  // int
-  static int MaxLevel = "override_maximum_level".GetStableHashCode();
-  // int
-  static int LevelChance = "override_level_chance".GetStableHashCode();
-  // float (percent)
-  static int Health = "override_health".GetStableHashCode();
-  // float
-  static int Faction = "override_faction".GetStableHashCode();
-  // string
-  static int Spawn = "override_spawn".GetStableHashCode();
-  // prefab,weight,minLevel,maxLevel|prefab,weight,minLevel,maxLevel|...
+
   private static float? SpawnHealth = null;
   private static string? SpawnFaction = null;
   private static int? SpawnLevel = null;
@@ -121,8 +115,6 @@ public class SpawnAreaTweaks
     }
   }
 
-  static int SpawnCondition = "override_spawn_condition".GetStableHashCode();
-  // string
   [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyPrefix]
   static bool CheckTime(SpawnArea __instance)
   {

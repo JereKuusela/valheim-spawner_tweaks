@@ -4,8 +4,8 @@ using HarmonyLib;
 
 namespace SpawnerTweaks;
 
-[HarmonyPatch(typeof(Pickable), nameof(Pickable.Awake))]
-public class PickableAwake
+[HarmonyPatch(typeof(Pickable))]
+public class PickablePatches
 {
   static int Spawn = "override_spawn".GetStableHashCode();
   // prefab
@@ -32,7 +32,8 @@ public class PickableAwake
   static void SetUseEffect(Pickable obj, ZNetView view) =>
     Helper.String(view, UseEffect, value => obj.m_pickEffector = Helper.ParseEffects(value));
   // Must be prefix because Awake starts respawn loop only if respawning.
-  static void Prefix(Pickable __instance)
+  [HarmonyPatch(nameof(Pickable.Awake)), HarmonyPrefix]
+  static void Setup(Pickable __instance)
   {
     if (!Configuration.configPickable.Value) return;
     var view = __instance.GetComponent<ZNetView>();
@@ -44,23 +45,17 @@ public class PickableAwake
     SetSpawnOffset(__instance, view);
     SetUseEffect(__instance, view);
   }
-}
 
-[HarmonyPatch(typeof(Pickable), nameof(Pickable.Drop))]
-public class PickableDrop
-{
   private static void SetStack(ItemDrop obj, int amount) => obj?.SetStack(amount);
-  static IEnumerable<CodeInstruction> Transpilera(IEnumerable<CodeInstruction> instructions)
+  [HarmonyPatch(nameof(Pickable.Drop)), HarmonyTranspiler]
+  static IEnumerable<CodeInstruction> SetStackAmount(IEnumerable<CodeInstruction> instructions)
   {
     return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ItemDrop), nameof(ItemDrop.SetStack))))
       .Set(OpCodes.Call, Transpilers.EmitDelegate(SetStack).operand).InstructionEnumeration();
   }
-}
 
-[HarmonyPatch(typeof(Pickable), nameof(Pickable.GetHoverName))]
-public class GetHoverName
-{
-  static bool Prefix(Pickable __instance, ref string __result)
+  [HarmonyPatch(nameof(Pickable.GetHoverName)), HarmonyPrefix]
+  static bool GetHoverName(Pickable __instance, ref string __result)
   {
     if (string.IsNullOrEmpty(__instance.m_overrideName) && !__instance.m_itemPrefab)
     {
