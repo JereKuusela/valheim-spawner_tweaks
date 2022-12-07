@@ -66,7 +66,7 @@ public class CreatureSpawnerPatches
     });
     Helper.Float(view, TriggerDistance, value => obj.m_triggerDistance = value);
     Helper.Float(view, TriggerNoise, value => obj.m_triggerNoise = value);
-    //Helper.Float(view, LevelChance, value => obj.m_levelupChance = value);
+    Helper.Float(view, LevelChance, value => obj.m_levelupChance = value);
     Helper.String(view, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
   }
 

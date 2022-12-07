@@ -32,6 +32,9 @@ Donations: [Buy me a computer](https://www.buymeacoffee.com/jerekuusela)
 
 # Changelog
 
+- v1.7
+  - Restores level up chance for spawn points.
+
 - v1.6
 	- Adds custom data support for altars, spawn points and spawners.
 	- Adds support for changing faction, health and level of all spawner creatures.
