@@ -7,6 +7,11 @@ namespace SpawnerTweaks;
 public class ComponentPatches
 {
   static int HashComponent = "override_component".GetStableHashCode();
+  static void AddComponent<T>(ZNetView view) where T : MonoBehaviour
+  {
+    Object.Destroy(view.GetComponent<Interactable>() as MonoBehaviour);
+    view.gameObject.AddComponent<T>();
+  }
   static void HandleComponent(ZNetView view)
   {
     var str = view.GetZDO().GetString(HashComponent, "").ToLower(); ;
@@ -14,13 +19,12 @@ public class ComponentPatches
     var values = str.Split(',');
     foreach (var value in values)
     {
-      if (value == "altar" && !view.gameObject.GetComponent<OfferingBowl>()) view.gameObject.AddComponent<OfferingBowl>();
-      if (value == "pickable" && !view.gameObject.GetComponent<Pickable>()) view.gameObject.AddComponent<Pickable>();
+      if (value == "altar" && !view.gameObject.GetComponent<OfferingBowl>()) AddComponent<OfferingBowl>(view);
+      if (value == "pickable" && !view.gameObject.GetComponent<Pickable>()) AddComponent<Pickable>(view);
       if (value == "spawnpoint" && !view.gameObject.GetComponent<CreatureSpawner>()) view.gameObject.AddComponent<CreatureSpawner>();
       if (value == "spawner" && !view.gameObject.GetComponent<SpawnArea>()) view.gameObject.AddComponent<SpawnArea>();
-      if (value == "chest" && !view.gameObject.GetComponent<Container>()) view.gameObject.AddComponent<Container>();
-      if (value == "itemstand" && !view.gameObject.GetComponent<ItemStand>()) view.gameObject.AddComponent<ItemStand>();
-      if (value == "-fireplace" && view.gameObject.GetComponent<Fireplace>()) Object.Destroy(view.GetComponent<Fireplace>());
+      if (value == "chest" && !view.gameObject.GetComponent<Container>()) AddComponent<Container>(view);
+      if (value == "itemstand" && !view.gameObject.GetComponent<ItemStand>()) AddComponent<ItemStand>(view);
     }
   }
   [HarmonyPatch(nameof(ZNetView.Awake)), HarmonyPostfix]

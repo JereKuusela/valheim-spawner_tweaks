@@ -32,6 +32,9 @@ Donations: [Buy me a computer](https://www.buymeacoffee.com/jerekuusela)
 
 # Changelog
 
+- v1.8
+  - Fixes chest respawn time reseting when loading the area.
+
 - v1.7
   - Restores level up chance for spawn points.
 

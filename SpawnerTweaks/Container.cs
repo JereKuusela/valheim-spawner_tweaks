@@ -71,6 +71,7 @@ public class ContainerPatches
   [HarmonyPatch(nameof(Container.OnContainerChanged)), HarmonyPostfix]
   static void TriggerRespawn(Container __instance)
   {
+    if (__instance.m_loading) return;
     if (!Configuration.configContainer.Value) return;
     Helper.Bool(__instance.m_nview, AddedItems, value =>
     {
