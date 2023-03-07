@@ -115,8 +115,23 @@ public class CreatureSpawnerPatches
   }
 }
 
-[HarmonyPatch(typeof(CreatureSpawner), nameof(CreatureSpawner.Spawn))]
-public class CreatureSpawnerSpawn
+[HarmonyPatch(typeof(CreatureSpawner), nameof(CreatureSpawner.UpdateSpawner))]
+public class CreatureSpawnerUpdateSpawner
 {
 
+  static KeyValuePair<int, int> SpawnId = ZDO.GetHashZDOID("alive_time");
+
+  static void Prefix(CreatureSpawner __instance, ref float state)
+  {
+    state = 0.0f;
+    if (__instance.m_respawnTimeMinuts != 0f && __instance.m_nview.GetZDO().GetZDOID(SpawnId).IsNone())
+    {
+      state = __instance.m_respawnTimeMinuts;
+      __instance.m_respawnTimeMinuts = 0;
+    }
+  }
+  static void Postfix(CreatureSpawner __instance, float state)
+  {
+    if (state != 0f) __instance.m_respawnTimeMinuts = state;
+  }
 }
