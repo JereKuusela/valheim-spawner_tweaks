@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Service;
@@ -173,5 +174,25 @@ public class SpawnAreaPatches
       Spawned.SetLevel(SpawnLevel.Value);
     if (SpawnHealth.HasValue)
       Spawned.SetMaxHealth(SpawnHealth.Value);
+  }
+  static int Tamed = "Tamed".GetStableHashCode();
+  static int Stack = "stack".GetStableHashCode();
+  [HarmonyPatch(nameof(SpawnArea.GetInstances)), HarmonyPrefix]
+  static bool GetInstances(SpawnArea __instance, out int near, out int total)
+  {
+    near = 0;
+    total = 0;
+    var pos = __instance.transform.position;
+    var prefabs = __instance.m_prefabs.Select(x => x.m_prefab.name.GetStableHashCode()).ToHashSet();
+    foreach (var zdo in ZNetScene.instance.m_instances.Keys)
+    {
+      if (!prefabs.Contains(zdo.GetPrefab())) continue;
+      if (zdo.GetBool(Tamed)) continue;
+      var distance = Utils.DistanceXZ(pos, zdo.GetPosition());
+      var amount = zdo.GetInt(Stack, 1);
+      if (distance < __instance.m_nearRadius) near += amount;
+      if (distance < __instance.m_farRadius) total += amount;
+    }
+    return false;
   }
 }

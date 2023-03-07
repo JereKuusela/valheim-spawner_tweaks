@@ -32,6 +32,9 @@ Donations: [Buy me a computer](https://www.buymeacoffee.com/jerekuusela)
 
 # Changelog
 
+- v1.9
+	- Adds support for checking spawn limits of non-creatures.
+
 - v1.8
   - Fixes chest respawn time reseting when loading the area.
 
