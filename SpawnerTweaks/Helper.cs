@@ -38,6 +38,15 @@ public class Helper
     if (int.TryParse(hashStr, out var hash)) return GetPrefab(hash);
     return null;
   }
+  public static ItemDrop? GetItem(string hashStr)
+  {
+    if (int.TryParse(hashStr, out var hash)) return GetItem(hash);
+    return null;
+  }
+  public static ItemDrop? GetItem(int hash)
+  {
+    return GetPrefab(hash)?.GetComponent<ItemDrop>();
+  }
   public static GameObject? GetPrefab(int hash)
   {
     if (hash == 0) return null;
@@ -104,6 +113,20 @@ public class Helper
     EffectList list = new();
     list.m_effectPrefabs = effects.ToArray();
     return list;
+  }
+  public static Smelter.ItemConversion? ParseConversion(string data)
+  {
+    var split = data.Split(',');
+    if (split.Length != 2) return null;
+    return new Smelter.ItemConversion()
+    {
+      m_from = GetItem(split[0]),
+      m_to = GetItem(split[1])
+    };
+  }
+  public static List<Smelter.ItemConversion> ParseConversions(string data)
+  {
+    return data.Split('|').Select(conversion => ParseConversion(conversion)!).Where(conversion => conversion != null).ToList();
   }
   public static SpawnArea.SpawnData? ParseSpawnData(string data)
   {

@@ -121,17 +121,17 @@ public class CreatureSpawnerUpdateSpawner
 
   static KeyValuePair<int, int> SpawnId = ZDO.GetHashZDOID("alive_time");
 
-  static void Prefix(CreatureSpawner __instance, ref float state)
+  static void Prefix(CreatureSpawner __instance, ref float __state)
   {
-    state = 0.0f;
+    __state = 0.0f;
     if (__instance.m_respawnTimeMinuts != 0f && __instance.m_nview.GetZDO().GetZDOID(SpawnId).IsNone())
     {
-      state = __instance.m_respawnTimeMinuts;
+      __state = __instance.m_respawnTimeMinuts;
       __instance.m_respawnTimeMinuts = 0;
     }
   }
-  static void Postfix(CreatureSpawner __instance, float state)
+  static void Postfix(CreatureSpawner __instance, float __state)
   {
-    if (state != 0f) __instance.m_respawnTimeMinuts = state;
+    if (__state != 0f) __instance.m_respawnTimeMinuts = __state;
   }
 }

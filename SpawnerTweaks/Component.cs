@@ -25,6 +25,7 @@ public class ComponentPatches
       if (value == "spawner" && !view.gameObject.GetComponent<SpawnArea>()) view.gameObject.AddComponent<SpawnArea>();
       if (value == "chest" && !view.gameObject.GetComponent<Container>()) AddComponent<Container>(view);
       if (value == "itemstand" && !view.gameObject.GetComponent<ItemStand>()) AddComponent<ItemStand>(view);
+      if (value == "smelter" && !view.gameObject.GetComponent<Smelter>()) AddComponent<Smelter>(view);
     }
   }
   [HarmonyPatch(nameof(ZNetView.Awake)), HarmonyPostfix]

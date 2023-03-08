@@ -1,6 +1,6 @@
 # Spawner Tweaks
 
-Changes the game logic to allow modifying altar, pickable, spawn point and spawner behavior.
+Changes the game logic to allow modifying altars, chests, item stands, pickables, smelters, spawn points and spawners.
 
 Install on all clients and on the server (modding [guide](https://youtu.be/L9ljm2eKLrk)).
 
@@ -18,6 +18,7 @@ To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.
 - Item stands: Item stand properties can be overridden.
 - Pickables: Pickable properties can be overridden.
 - Spawn points: Spawn point properties can be overridden.
+- Smelters: Smelter properties can be overridden.
 - Spawners: Spawner properties can be overridden.
 - No spawn point suppression (one time): One time spawn points can't be suppressed with player base structures (even if configured to be respawning).
 - No spawn point suppression (respawning): Respawning spawn points can't be suppressed with player base structures (even if configured to be one time). This is off by default because it can affect vanilla game play.
@@ -33,6 +34,7 @@ Donations: [Buy me a computer](https://www.buymeacoffee.com/jerekuusela)
 # Changelog
 
 - v1.9
+  - Adds support for tweaking smelters.
 	- Adds support for checking spawn limits of non-creatures.
 	- Fixes a vanilla bug that spawn points start counting from day 0 (some time must pass even for the initial spawn).
 
