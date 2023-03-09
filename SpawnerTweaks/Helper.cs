@@ -114,7 +114,7 @@ public class Helper
     list.m_effectPrefabs = effects.ToArray();
     return list;
   }
-  public static Smelter.ItemConversion? ParseConversion(string data)
+  public static Smelter.ItemConversion? ParseSmelterConversion(string data)
   {
     var split = data.Split(',');
     if (split.Length != 2) return null;
@@ -124,9 +124,24 @@ public class Helper
       m_to = GetItem(split[1])
     };
   }
-  public static List<Smelter.ItemConversion> ParseConversions(string data)
+  public static Fermenter.ItemConversion? ParseFermenterConversion(string data)
   {
-    return data.Split('|').Select(conversion => ParseConversion(conversion)!).Where(conversion => conversion != null).ToList();
+    var split = data.Split(',');
+    if (split.Length < 2) return null;
+    return new Fermenter.ItemConversion()
+    {
+      m_from = GetItem(split[0]),
+      m_to = GetItem(split[1]),
+      m_producedItems = split.Length > 2 ? Helper.Int(split[2], 1) : 1
+    };
+  }
+  public static List<Smelter.ItemConversion> ParseSmelterConversions(string data)
+  {
+    return data.Split('|').Select(conversion => ParseSmelterConversion(conversion)!).Where(conversion => conversion != null).ToList();
+  }
+  public static List<Fermenter.ItemConversion> ParseFermenterConversions(string data)
+  {
+    return data.Split('|').Select(conversion => ParseFermenterConversion(conversion)!).Where(conversion => conversion != null).ToList();
   }
   public static SpawnArea.SpawnData? ParseSpawnData(string data)
   {

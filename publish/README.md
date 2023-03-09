@@ -34,9 +34,10 @@ Donations: [Buy me a computer](https://www.buymeacoffee.com/jerekuusela)
 # Changelog
 
 - v1.9
+  - Adds support for tweaking fermenters.
   - Adds support for tweaking smelters.
-	- Adds support for checking spawn limits of non-creatures.
-	- Fixes a vanilla bug that spawn points start counting from day 0 (some time must pass even for the initial spawn).
+  - Adds support for checking spawn limits of non-creatures.
+  - Fixes a vanilla bug that spawn points start counting from day 0 (some time must pass even for the initial spawn).
 
 - v1.8
   - Fixes chest respawn time reseting when loading the area.

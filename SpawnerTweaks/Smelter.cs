@@ -27,7 +27,7 @@ public class SmelterPatches
   [HarmonyPatch(nameof(Smelter.Awake)), HarmonyPostfix]
   static void Setup(Smelter __instance)
   {
-    if (!Configuration.configCreatureSmelter.Value) return;
+    if (!Configuration.configSmelter.Value) return;
     var obj = __instance;
     var view = obj.m_nview;
     if (!view || !view.IsValid()) return;
@@ -39,6 +39,6 @@ public class SmelterPatches
     Helper.String(view, InputEffect, value => obj.m_oreAddedEffects = Helper.ParseEffects(value));
     Helper.String(view, FuelEffect, value => obj.m_fuelAddedEffects = Helper.ParseEffects(value));
     Helper.String(view, OutputEffect, value => obj.m_produceEffects = Helper.ParseEffects(value));
-    Helper.String(view, Conversion, value => obj.m_conversion = Helper.ParseConversions(value));
+    Helper.String(view, Conversion, value => obj.m_conversion = Helper.ParseSmelterConversions(value));
   }
 }

@@ -12,7 +12,8 @@ public class Configuration
   public static ConfigEntry<bool> configSpawnArea;
   public static ConfigEntry<bool> configCharacter;
   public static ConfigEntry<bool> configCreatureSpawner;
-  public static ConfigEntry<bool> configCreatureSmelter;
+  public static ConfigEntry<bool> configSmelter;
+  public static ConfigEntry<bool> configFermenter;
   public static ConfigEntry<bool> configNoCreatureSpawnerSuppression;
   public static ConfigEntry<bool> configNoCreatureRespawnerSuppression;
 #nullable enable
@@ -24,8 +25,9 @@ public class Configuration
     configNoCreatureRespawnerSuppression = wrapper.Bind(section, "No spawn point suppression (respawning)", false, "Respawning spawn points can't be suppressed with player base (even when configured to one time).");
     configNoCreatureRespawnerSuppression.SettingChanged += (s, e) => NoSuppression.Update();
     configCreatureSpawner = wrapper.Bind(section, "Spawn points", true, "Spawn point properties can be overridden.");
-    configCreatureSmelter = wrapper.Bind(section, "Smelters", true, "Smelter properties can be overridden.");
-    configComponent = wrapper.Bind(section, "Components", true, "Altars, pickables, spawn points and spawners can be attached to any object.");
+    configSmelter = wrapper.Bind(section, "Smelters", true, "Smelter properties can be overridden.");
+    configFermenter = wrapper.Bind(section, "Fermenters", true, "Fermenter properties can be overridden.");
+    configComponent = wrapper.Bind(section, "Components", true, "Altars, pickables, spawners, etc. can be attached to any object.");
     configPickable = wrapper.Bind(section, "Pickables", true, "Pickable properties can be overridden.");
     configCharacter = wrapper.Bind(section, "Creatures", true, "Creature properties can be overridden.");
     configContainer = wrapper.Bind(section, "Chests", true, "Chest properties can be overridden.");
