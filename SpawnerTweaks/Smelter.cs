@@ -34,7 +34,7 @@ public class SmelterPatches
     Helper.Int(view, FuelUsage, value => obj.m_fuelPerProduct = value);
     Helper.Int(view, MaxAmount, value => obj.m_maxOre = value);
     Helper.Int(view, MaxFuel, value => obj.m_maxFuel = value);
-    Helper.Int(view, Fuel, value => obj.m_fuelItem = Helper.GetItem(value));
+    Helper.Item(view, Fuel, value => obj.m_fuelItem = value);
     Helper.Float(view, Speed, value => obj.m_secPerProduct = value);
     Helper.String(view, InputEffect, value => obj.m_oreAddedEffects = Helper.ParseEffects(value));
     Helper.String(view, FuelEffect, value => obj.m_fuelAddedEffects = Helper.ParseEffects(value));

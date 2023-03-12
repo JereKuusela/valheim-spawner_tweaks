@@ -266,6 +266,14 @@ public class Helper
     if (prefab == null) return;
     action(prefab);
   }
+  public static void Item(ZNetView view, int hash, Action<ItemDrop> action)
+  {
+    if (view == null || !view.IsValid()) return;
+    var value = view.GetZDO().GetInt(hash, 0);
+    var item = Helper.GetItem(value);
+    if (item == null) return;
+    action(item);
+  }
 
   public static int RollLevel(int min, int max, float chance)
   {
