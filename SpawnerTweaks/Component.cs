@@ -27,6 +27,7 @@ public class ComponentPatches
       if (value == "itemstand" && !view.gameObject.GetComponent<ItemStand>()) AddComponent<ItemStand>(view);
       if (value == "smelter" && !view.gameObject.GetComponent<Smelter>()) AddComponent<Smelter>(view);
       if (value == "fermenter" && !view.gameObject.GetComponent<Fermenter>()) AddComponent<Fermenter>(view);
+      if (value == "beehive" && !view.gameObject.GetComponent<Beehive>()) AddComponent<Beehive>(view);
     }
   }
   [HarmonyPatch(nameof(ZNetView.Awake)), HarmonyPostfix]

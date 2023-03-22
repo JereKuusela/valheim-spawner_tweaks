@@ -13,8 +13,10 @@ To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.
 # Config
 
 - Components: Altars, pickables, spawn points and spawners can be attached to any object.
+- Beehives: Beehive properties can be overridden.
 - Boss altars: Boss altar properties can be overridden.
 - Chests: Chest properties can be overridden.
+- Fermenters: Fermenter properties can be overridden.
 - Item stands: Item stand properties can be overridden.
 - Pickables: Pickable properties can be overridden.
 - Spawn points: Spawn point properties can be overridden.
@@ -34,6 +36,7 @@ Donations: [Buy me a computer](https://www.buymeacoffee.com/jerekuusela)
 # Changelog
 
 - v1.9
+  - Adds support for tweaking beehives.
   - Adds support for tweaking fermenters.
   - Adds support for tweaking smelters.
   - Adds support for checking spawn limits of non-creatures.

@@ -13,6 +13,7 @@ public class Configuration
   public static ConfigEntry<bool> configCharacter;
   public static ConfigEntry<bool> configCreatureSpawner;
   public static ConfigEntry<bool> configSmelter;
+  public static ConfigEntry<bool> configBeehive;
   public static ConfigEntry<bool> configFermenter;
   public static ConfigEntry<bool> configNoCreatureSpawnerSuppression;
   public static ConfigEntry<bool> configNoCreatureRespawnerSuppression;
@@ -26,6 +27,7 @@ public class Configuration
     configNoCreatureRespawnerSuppression.SettingChanged += (s, e) => NoSuppression.Update();
     configCreatureSpawner = wrapper.Bind(section, "Spawn points", true, "Spawn point properties can be overridden.");
     configSmelter = wrapper.Bind(section, "Smelters", true, "Smelter properties can be overridden.");
+    configBeehive = wrapper.Bind(section, "Beehives", true, "Beehive properties can be overridden.");
     configFermenter = wrapper.Bind(section, "Fermenters", true, "Fermenter properties can be overridden.");
     configComponent = wrapper.Bind(section, "Components", true, "Altars, pickables, spawners, etc. can be attached to any object.");
     configPickable = wrapper.Bind(section, "Pickables", true, "Pickable properties can be overridden.");

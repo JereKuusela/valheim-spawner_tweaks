@@ -274,6 +274,30 @@ public class Helper
     if (item == null) return;
     action(item);
   }
+  public static void Offset(ZNetView view, int hash, Transform initial, Action<Transform> action)
+  {
+    if (!initial)
+    {
+      GameObject go = new();
+      go.transform.parent = view.transform;
+      go.transform.localPosition = Vector3.zero;
+      go.transform.localRotation = Quaternion.identity;
+      initial = go.transform;
+    }
+    String(view, hash, value =>
+    {
+      var split = value.Split(',');
+      var pos = initial.localPosition;
+      pos.x = Helper.Float(split[0], pos.x);
+      if (split.Length > 1)
+        pos.z = Helper.Float(split[1], pos.z);
+      if (split.Length > 2)
+        pos.y = Helper.Float(split[2], pos.y);
+      initial.localPosition = pos;
+    });
+    action(initial);
+  }
+
 
   public static int RollLevel(int min, int max, float chance)
   {

@@ -104,33 +104,14 @@ public class OfferingBowlPatches
   static void SetSpawnMaxY(OfferingBowl obj, ZNetView view) =>
     Helper.Float(view, SpawnMaxY, value => obj.m_spawnBossMaxYDistance = value);
   static void SetItemOffset(OfferingBowl obj, ZNetView view) =>
-    Helper.String(view, ItemOffset, value =>
-    {
-      var split = value.Split(',');
-      var pos = obj.m_itemSpawnPoint.localPosition;
-      pos.x = Helper.Float(split[0], pos.x);
-      if (split.Length > 1)
-        pos.z = Helper.Float(split[1], pos.z);
-      if (split.Length > 2)
-        pos.y = Helper.Float(split[2], pos.y);
-      obj.m_itemSpawnPoint.localPosition = pos;
-    });
+    Helper.Offset(view, ItemOffset, obj.m_itemSpawnPoint, value => obj.m_itemSpawnPoint = value);
   static void SetStartEffect(OfferingBowl obj, ZNetView view) =>
     Helper.String(view, StartEffect, value => obj.m_spawnBossStartEffects = Helper.ParseEffects(value));
   static void SetSpawnEffect(OfferingBowl obj, ZNetView view) =>
     Helper.String(view, SpawnEffect, value => obj.m_spawnBossDoneffects = Helper.ParseEffects(value));
   static void SetUseEffect(OfferingBowl obj, ZNetView view) =>
     Helper.String(view, UseEffect, value => obj.m_fuelAddedEffects = Helper.ParseEffects(value));
-  static void EnsureItemSpawnPoint(OfferingBowl obj)
-  {
-    if (obj.m_itemSpawnPoint) return;
-    GameObject spawnPoint = new();
-    spawnPoint.transform.parent = obj.transform;
-    spawnPoint.transform.localPosition = Vector3.zero;
-    spawnPoint.transform.localRotation = Quaternion.identity;
-    obj.m_itemSpawnPoint = spawnPoint.transform;
 
-  }
 
   [HarmonyPatch(nameof(OfferingBowl.Awake)), HarmonyPostfix]
   public static void Setup(OfferingBowl __instance)
@@ -138,7 +119,6 @@ public class OfferingBowlPatches
     if (!Configuration.configOfferingBowl.Value) return;
     var view = __instance.GetComponentInParent<ZNetView>();
     if (!view || !view.IsValid()) return;
-    EnsureItemSpawnPoint(__instance);
     SetSpawn(__instance, view);
     SetAmount(__instance, view);
     SetSpawnItem(__instance, view);
