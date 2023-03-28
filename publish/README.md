@@ -10,6 +10,10 @@ This mod only provides game logic.
 
 To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.io/package/JereKuusela/World_Edit_Commands/).
 
+# Tutorials
+
+- World Edit basic usage: https://youtu.be/Bwkb3XadSl0 (28 minutes, created by StonedProphet)
+
 # Config
 
 - Components: Altars, pickables, spawn points and spawners can be attached to any object.
@@ -32,46 +36,3 @@ Thanks for Azumatt for creating the mod icon!
 Sources: [GitHub](https://github.com/JereKuusela/valheim-spawner_tweaks)
 
 Donations: [Buy me a computer](https://www.buymeacoffee.com/jerekuusela)
-
-# Changelog
-
-- v1.9
-  - Adds support for tweaking beehives.
-  - Adds support for tweaking fermenters.
-  - Adds support for tweaking smelters.
-  - Adds support for checking spawn limits of non-creatures.
-  - Fixes a vanilla bug that spawn points start counting from day 0 (some time must pass even for the initial spawn).
-
-- v1.8
-  - Fixes chest respawn time reseting when loading the area.
-
-- v1.7
-  - Restores level up chance for spawn points.
-
-- v1.6
-	- Adds custom data support for altars, spawn points and spawners.
-	- Adds support for changing faction, health and level of all spawner creatures.
-	- Adds support for configuring individual creatures.
-	- Fixes CLLC overriding spawner levels.
-	- Fixes the spawn condition not working for spawners.
-	- Fixes chest max amount not working.
-
-- v1.5
-	- Fixes the black screen.
-
-- v1.4
-	- Adds support for chests.
-	- Adds support for item stands.
-
-- v1.3
-	- Adds support for faction overrides.
-
-- v1.2
-	- Fixes an issue with the Marketplace mod.
-	- Fixes pickables showing error if name and dropped item is not defined.
-
-- v1.1
-	- Fixes trigger distance not working for spawners.
-	- Fixes error when spawning non-creatures from spawners.
-	- Fixes the default weight for spawners being 0.
-	- Fixes pickables.

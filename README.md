@@ -10,6 +10,10 @@ This mod only provides game logic.
 
 To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.io/package/JereKuusela/World_Edit_Commands/).
 
+# Tutorials
+
+- World Edit basic usage: https://youtu.be/Bwkb3XadSl0 (28 minutes, created by StonedProphet)
+
 # Config
 
 - Components: Altars, pickables, spawn points and spawners can be attached to any object.
