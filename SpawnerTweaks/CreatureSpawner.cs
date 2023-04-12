@@ -119,7 +119,7 @@ public class CreatureSpawnerPatches
 public class CreatureSpawnerUpdateSpawner
 {
 
-  static KeyValuePair<int, int> SpawnId = ZDO.GetHashZDOID("alive_time");
+  static KeyValuePair<int, int> SpawnId = ZDO.GetHashZDOID("spawn_id");
 
   static void Prefix(CreatureSpawner __instance, ref float __state)
   {

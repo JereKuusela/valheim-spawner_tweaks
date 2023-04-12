@@ -10,7 +10,7 @@ public class PickablePatches
   static int Spawn = "override_spawn".GetStableHashCode();
   // prefab
   static int Respawn = "override_respawn".GetStableHashCode();
-  // float (minutes)
+  // int (minutes)
   static int Amount = "override_amount".GetStableHashCode();
   // int
   static int Name = "override_name".GetStableHashCode();

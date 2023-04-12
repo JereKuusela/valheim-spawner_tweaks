@@ -1,3 +1,6 @@
+- v1.10
+  - Fixes respawning spawn points not working.
+
 - v1.9
   - Adds support for tweaking beehives.
   - Adds support for tweaking fermenters.

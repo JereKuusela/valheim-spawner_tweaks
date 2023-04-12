@@ -13,6 +13,7 @@ To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.
 # Tutorials
 
 - World Edit basic usage: https://youtu.be/Bwkb3XadSl0 (28 minutes, created by StonedProphet)
+- World Edit Spawner Tweaks: https://youtu.be/mS59BMvR5vY (22 minutes, created by StonedProphet)
 
 # Config
 
