@@ -8,7 +8,7 @@ public class Plugin : BaseUnityPlugin
 {
   const string GUID = "spawner_tweaks";
   const string NAME = "Spawner Tweaks";
-  const string VERSION = "1.10";
+  const string VERSION = "1.11";
   public static ServerSync.ConfigSync ConfigSync = new(GUID)
   {
     DisplayName = NAME,
@@ -21,6 +21,8 @@ public class Plugin : BaseUnityPlugin
     ConfigWrapper wrapper = new("spawner_config", Config, ConfigSync);
     Configuration.Init(wrapper);
     new Harmony(GUID).PatchAll();
+    Watcher.Setup(Config, Logger);
   }
+
 }
 

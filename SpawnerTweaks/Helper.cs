@@ -47,6 +47,15 @@ public class Helper
   {
     return GetPrefab(hash)?.GetComponent<ItemDrop>();
   }
+  public static GameObject? GetAttack(string hashStr)
+  {
+    if (int.TryParse(hashStr, out var hash)) return GetAttack(hash);
+    return null;
+  }
+  public static GameObject GetAttack(int hash)
+  {
+    return ObjectDB.instance.GetItemPrefab(hash);
+  }
   public static GameObject? GetPrefab(int hash)
   {
     if (hash == 0) return null;
@@ -224,6 +233,18 @@ public class Helper
     return drops.ToList();
   }
 
+  public static Humanoid.ItemSet ParseItemSet(string data)
+  {
+    Humanoid.ItemSet set = new();
+    set.m_name = "";
+    set.m_items = data.Split(',').Select(GetAttack).Where(item => item).ToArray();
+    return set;
+  }
+  public static Humanoid.ItemSet[] ParseCharacterItemSets(string data)
+  {
+    var sets = data.Split('|').Select(set => ParseItemSet(set)).Where(set => set.m_items.Length > 0);
+    return sets.ToArray();
+  }
   public static void Float(ZNetView view, int hash, Action<float> action)
   {
     if (view == null || !view.IsValid()) return;

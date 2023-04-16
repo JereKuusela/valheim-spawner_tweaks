@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
+using UnityEngine;
 
 namespace SpawnerTweaks;
 
@@ -18,6 +19,8 @@ public class CharacterPatches
   // type,modifier|...
   static int Items = "override_items".GetStableHashCode();
   // id,weight,min,max|...
+  static int Attacks = "override_attacks".GetStableHashCode();
+  // id|id|id|...
 
   [HarmonyPatch(nameof(Character.Awake)), HarmonyPostfix]
   static void Setup(Character __instance)
@@ -33,6 +36,27 @@ public class CharacterPatches
     Helper.String(__instance.m_nview, Resistances, value => __instance.m_damageModifiers = Helper.ParseDamageModifiers(value));
     if (__instance.TryGetComponent<CharacterDrop>(out var drop))
       Helper.String(__instance.m_nview, Items, value => drop.m_drops = Helper.ParseCharacterDropsData(value));
+    if (__instance.TryGetComponent<Humanoid>(out var humanoid))
+    {
+      Helper.String(__instance.m_nview, Attacks, value =>
+      {
+        var sets = Helper.ParseCharacterItemSets(value);
+        if (sets.Length == 0) return;
+        humanoid.m_randomWeapon = new GameObject[0];
+        humanoid.m_randomShield = new GameObject[0];
+        Console.instance.AddString($"SpawnerTweaks: {__instance.m_name} has {sets.Length} item sets");
+        if (sets.Length == 1)
+        {
+          humanoid.m_randomSets = new Humanoid.ItemSet[0];
+          humanoid.m_defaultItems = sets[0].m_items;
+        }
+        else
+        {
+          humanoid.m_randomSets = sets;
+          humanoid.m_defaultItems = new GameObject[0];
+        }
+      });
+    }
   }
 
   [HarmonyPatch(nameof(Character.Awake)), HarmonyTranspiler]

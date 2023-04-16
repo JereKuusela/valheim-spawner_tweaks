@@ -1,3 +1,7 @@
+- v1.11
+  - Adds support for changing enemy attacks (only works in some cases).
+  - Adds config reload.
+
 - v1.10
   - Fixes respawning spawn points not working.
 
