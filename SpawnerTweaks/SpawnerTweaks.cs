@@ -23,6 +23,4 @@ public class Plugin : BaseUnityPlugin
     new Harmony(GUID).PatchAll();
     Watcher.Setup(Config, Logger);
   }
-
 }
-

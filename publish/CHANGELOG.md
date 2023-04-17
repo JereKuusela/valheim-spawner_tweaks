@@ -1,6 +1,6 @@
 - v1.11
   - Adds support for changing enemy attacks (only works in some cases).
-  - Adds config reload.
+  - Adds automatic config reload when editing the file.
 
 - v1.10
   - Fixes respawning spawn points not working.
@@ -17,18 +17,3 @@
 
 - v1.7
   - Restores level up chance for spawn points.
-
-- v1.6
-	- Adds custom data support for altars, spawn points and spawners.
-	- Adds support for changing faction, health and level of all spawner creatures.
-	- Adds support for configuring individual creatures.
-	- Fixes CLLC overriding spawner levels.
-	- Fixes the spawn condition not working for spawners.
-	- Fixes chest max amount not working.
-
-- v1.5
-	- Fixes the black screen.
-
-- v1.4
-	- Adds support for chests.
-	- Adds support for item stands.
