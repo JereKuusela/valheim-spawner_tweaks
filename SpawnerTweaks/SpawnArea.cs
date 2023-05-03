@@ -13,9 +13,13 @@ public class SpawnAreaPatches
 {
   static int SpawnEffect = "override_spawn_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static int Spawn = "override_spawn".GetStableHashCode();
+  static int SpawnLegacy = "override_spawn".GetStableHashCode();
   // prefab,weight,minLevel,maxLevel|prefab,weight,minLevel,maxLevel|...
-  static int Respawn = "override_respawn".GetStableHashCode();
+  static int Spawn = "override_spawnarea_spawn".GetStableHashCode();
+  // prefab,weight,minLevel,maxLevel|prefab,weight,minLevel,maxLevel|...
+  static int RespawnLegacy = "override_respawn".GetStableHashCode();
+  // float (seconds)
+  static int Respawn = "override_spawnarea_respawn".GetStableHashCode();
   // float (seconds)
   static int MaxNear = "override_max_near".GetStableHashCode();
   // int
@@ -56,12 +60,17 @@ public class SpawnAreaPatches
     Helper.Float(view, TriggerDistance, value => obj.m_triggerDistance = value);
     Helper.Int(view, MaxNear, value => obj.m_maxNear = value);
     Helper.Int(view, MaxTotal, value => obj.m_maxTotal = value);
-    Helper.Float(view, Respawn, value => obj.m_spawnIntervalSec = value);
+    Helper.Float(view, Respawn, RespawnLegacy, value => obj.m_spawnIntervalSec = value);
     Helper.String(view, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
     Helper.String(view, Spawn, value => obj.m_prefabs = Helper.ParseSpawnsData(value));
     Helper.Int(view, SpawnCondition, value => obj.m_onGroundOnly = (value & 4) > 0);
   }
 
+  [HarmonyPatch(nameof(SpawnArea.UpdateSpawn)), HarmonyPrefix]
+  static bool PickableCheck(SpawnArea __instance)
+  {
+    return __instance.GetComponent<Pickable>()?.m_picked != true;
+  }
 
   private static float? SpawnHealth = null;
   private static string? SpawnFaction = null;
@@ -82,7 +91,7 @@ public class SpawnAreaPatches
     Helper.Int(__instance.m_nview, MinLevel, value => minLevel = value);
     Helper.Int(__instance.m_nview, MaxLevel, value => maxLevel = value);
 
-    Helper.String(__instance.m_nview, Spawn, value =>
+    Helper.String(__instance.m_nview, Spawn, SpawnLegacy, value =>
     {
       var index = __instance.m_prefabs.IndexOf(__result);
       var split = value.Split('|')[index].Split(',');

@@ -245,13 +245,20 @@ public class Helper
     var sets = data.Split('|').Select(set => ParseItemSet(set)).Where(set => set.m_items.Length > 0);
     return sets.ToArray();
   }
-  public static void Float(ZNetView view, int hash, Action<float> action)
+  public static bool Float(ZNetView view, int hash, Action<float> action)
   {
-    if (view == null || !view.IsValid()) return;
+    if (view == null || !view.IsValid()) return false;
     var value = view.GetZDO().GetFloat(hash, -1f);
-    if (value < 0f) return;
+    if (value < 0f) return false;
     action(value);
+    return true;
   }
+  public static void Float(ZNetView view, int hash, int legagyHash, Action<float> action)
+  {
+    if (!Float(view, hash, action))
+      Float(view, legagyHash, action);
+  }
+
   public static void Long(ZNetView view, int hash, Action<long> action)
   {
     if (view == null || !view.IsValid()) return;
@@ -272,21 +279,34 @@ public class Helper
     var value = view.GetZDO().GetBool(hash, false);
     action(value);
   }
-  public static void String(ZNetView view, int hash, Action<string> action)
+  public static bool String(ZNetView view, int hash, Action<string> action)
   {
-    if (view == null || !view.IsValid()) return;
+    if (view == null || !view.IsValid()) return false;
     var value = view.GetZDO().GetString(hash, "");
-    if (value == "") return;
+    if (value == "") return false;
     action(value);
+    return true;
   }
-  public static void Prefab(ZNetView view, int hash, Action<GameObject> action)
+  public static void String(ZNetView view, int hash, int legacyHash, Action<string> action)
   {
-    if (view == null || !view.IsValid()) return;
+    if (!String(view, hash, action))
+      String(view, legacyHash, action);
+  }
+  public static bool Prefab(ZNetView view, int hash, Action<GameObject> action)
+  {
+    if (view == null || !view.IsValid()) return false;
     var value = view.GetZDO().GetInt(hash, 0);
     var prefab = Helper.GetPrefab(value);
-    if (prefab == null) return;
+    if (prefab == null) return false;
     action(prefab);
+    return true;
   }
+  public static void Prefab(ZNetView view, int hash, int legacyHash, Action<GameObject> action)
+  {
+    if (!Prefab(view, hash, action))
+      Prefab(view, legacyHash, action);
+  }
+
   public static void Item(ZNetView view, int hash, Action<ItemDrop> action)
   {
     if (view == null || !view.IsValid()) return;

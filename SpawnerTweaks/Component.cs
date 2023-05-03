@@ -14,7 +14,7 @@ public class ComponentPatches
   }
   static void HandleComponent(ZNetView view)
   {
-    var str = view.GetZDO().GetString(HashComponent, "").ToLower(); ;
+    var str = view.GetZDO().GetString(HashComponent, "").ToLower();
     if (str == "") return;
     var values = str.Split(',');
     foreach (var value in values)

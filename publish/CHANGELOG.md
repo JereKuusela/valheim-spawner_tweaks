@@ -1,3 +1,6 @@
+- v1.12
+  - Adds support for Pickable Spawner combo (only spawns when the item is not picked).
+
 - v1.11
   - Adds support for changing enemy attacks (only works in some cases).
   - Adds automatic config reload when editing the file.

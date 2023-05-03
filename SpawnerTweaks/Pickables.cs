@@ -7,9 +7,13 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(Pickable))]
 public class PickablePatches
 {
-  static int Spawn = "override_spawn".GetStableHashCode();
+  static int SpawnLegacy = "override_spawn".GetStableHashCode();
   // prefab
-  static int Respawn = "override_respawn".GetStableHashCode();
+  static int Spawn = "override_pickable_spawn".GetStableHashCode();
+  // prefab
+  static int RespawnLegacy = "override_respawn".GetStableHashCode();
+  // int (minutes)
+  static int Respawn = "override_pickable_respawn".GetStableHashCode();
   // int (minutes)
   static int Amount = "override_amount".GetStableHashCode();
   // int
@@ -20,9 +24,9 @@ public class PickablePatches
   static int UseEffect = "override_use_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
   static void SetSpawn(Pickable obj, ZNetView view) =>
-    Helper.Prefab(view, Spawn, value => obj.m_itemPrefab = value);
+    Helper.Prefab(view, Spawn, SpawnLegacy, value => obj.m_itemPrefab = value);
   static void SetRespawn(Pickable obj, ZNetView view) =>
-    Helper.Float(view, Respawn, value => obj.m_respawnTimeMinutes = (int)value);
+    Helper.Float(view, Respawn, RespawnLegacy, value => obj.m_respawnTimeMinutes = (int)value);
   static void SetAmount(Pickable obj, ZNetView view) =>
     Helper.Int(view, Amount, value => obj.m_amount = value);
   static void SetName(Pickable obj, ZNetView view) =>
