@@ -1,5 +1,6 @@
 - v1.12
   - Adds support for Pickable Spawner combo (only spawns when the item is not picked).
+  - Improves compatibility with EnhancedBossesRedone mod.
 
 - v1.11
   - Adds support for changing enemy attacks (only works in some cases).
@@ -17,6 +18,3 @@
 
 - v1.8
   - Fixes chest respawn time reseting when loading the area.
-
-- v1.7
-  - Restores level up chance for spawn points.

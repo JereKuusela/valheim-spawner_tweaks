@@ -113,7 +113,7 @@ public class OfferingBowlPatches
     Helper.String(view, UseEffect, value => obj.m_fuelAddedEffects = Helper.ParseEffects(value));
 
 
-  [HarmonyPatch(nameof(OfferingBowl.Awake)), HarmonyPostfix]
+  [HarmonyPatch(nameof(OfferingBowl.Awake)), HarmonyPrefix, HarmonyPriority(Priority.VeryHigh)]
   public static void Setup(OfferingBowl __instance)
   {
     if (!Configuration.configOfferingBowl.Value) return;
