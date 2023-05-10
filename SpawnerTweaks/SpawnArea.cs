@@ -62,7 +62,7 @@ public class SpawnAreaPatches
     Helper.Int(view, MaxTotal, value => obj.m_maxTotal = value);
     Helper.Float(view, Respawn, RespawnLegacy, value => obj.m_spawnIntervalSec = value);
     Helper.String(view, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
-    Helper.String(view, Spawn, value => obj.m_prefabs = Helper.ParseSpawnsData(value));
+    Helper.String(view, Spawn, SpawnLegacy, value => obj.m_prefabs = Helper.ParseSpawnsData(value));
     Helper.Int(view, SpawnCondition, value => obj.m_onGroundOnly = (value & 4) > 0);
   }
 

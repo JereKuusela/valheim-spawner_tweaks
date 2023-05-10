@@ -1,3 +1,6 @@
+- v1.13
+  - Fixes old spawner changes not working and causing errors.
+
 - v1.12
   - Adds support for Pickable Spawner combo (only spawns when the item is not picked).
   - Improves compatibility with EnhancedBossesRedone mod.
