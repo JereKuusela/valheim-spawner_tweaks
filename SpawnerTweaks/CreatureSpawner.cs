@@ -10,29 +10,29 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(CreatureSpawner))]
 public class CreatureSpawnerPatches
 {
-  static int Spawn = "override_spawn".GetStableHashCode();
+  static readonly int Spawn = "override_spawn".GetStableHashCode();
   // prefab
-  static int Respawn = "override_respawn".GetStableHashCode();
+  static readonly int Respawn = "override_respawn".GetStableHashCode();
   // float (minutes)
-  static int MinLevel = "override_minimum_level".GetStableHashCode();
+  static readonly int MinLevel = "override_minimum_level".GetStableHashCode();
   // int
-  static int MaxLevel = "override_maximum_level".GetStableHashCode();
+  static readonly int MaxLevel = "override_maximum_level".GetStableHashCode();
   // int
-  static int SpawnCondition = "override_spawn_condition".GetStableHashCode();
+  static readonly int SpawnCondition = "override_spawn_condition".GetStableHashCode();
   // flag (1 = day only, 2 = night only)
-  static int TriggerDistance = "override_trigger_distance".GetStableHashCode();
+  static readonly int TriggerDistance = "override_trigger_distance".GetStableHashCode();
   // float (meters)
-  static int TriggerNoise = "override_trigger_noise".GetStableHashCode();
+  static readonly int TriggerNoise = "override_trigger_noise".GetStableHashCode();
   // float (meters)
-  static int SpawnEffect = "override_spawn_effect".GetStableHashCode();
+  static readonly int SpawnEffect = "override_spawn_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static int LevelChance = "override_level_chance".GetStableHashCode();
+  static readonly int LevelChance = "override_level_chance".GetStableHashCode();
   // float (percent)
-  static int Health = "override_health".GetStableHashCode();
+  static readonly int Health = "override_health".GetStableHashCode();
   // float
-  static int Faction = "override_faction".GetStableHashCode();
+  static readonly int Faction = "override_faction".GetStableHashCode();
   // string
-  static int Data = "override_data".GetStableHashCode();
+  static readonly int Data = "override_data".GetStableHashCode();
   // string
 
   static void HandleSpawn(CreatureSpawner obj)
@@ -44,7 +44,8 @@ public class CreatureSpawnerPatches
     obj.m_creaturePrefab = prefab;
   }
 
-  [HarmonyPatch(nameof(CreatureSpawner.Awake)), HarmonyPostfix]
+  // CLLC patches the same thing. Lower priority to override it.
+  [HarmonyPatch(nameof(CreatureSpawner.Awake)), HarmonyPostfix, HarmonyPriority(Priority.LowerThanNormal)]
   static void Setup(CreatureSpawner __instance)
   {
     if (!Configuration.configCreatureSpawner.Value) return;
@@ -87,8 +88,11 @@ public class CreatureSpawnerPatches
     if (!__result) return;
     var obj = __result.GetComponent<Character>();
     if (!obj) return;
-    Helper.Float(__instance.m_nview, Health, obj.SetMaxHealth);
-    Helper.String(__instance.m_nview, Faction, value =>
+    // Level must be done here to override CLLC changes.
+    OverrideLevel(__instance, obj);
+    var view = __instance.m_nview;
+    Helper.Float(view, Health, obj.SetMaxHealth);
+    Helper.String(view, Faction, value =>
     {
       obj.m_nview.GetZDO().Set(Faction, value);
       if (Enum.TryParse<Character.Faction>(value, true, out var faction))
@@ -96,11 +100,24 @@ public class CreatureSpawnerPatches
     });
   }
 
+  private static void OverrideLevel(CreatureSpawner spawner, Character obj)
+  {
+    var view = spawner.m_nview;
+    var setupLevel = false;
+    Helper.Int(view, MaxLevel, value => setupLevel = true);
+    if (!setupLevel)
+      Helper.Int(view, MinLevel, value => setupLevel = true);
+    if (!setupLevel)
+      Helper.Float(view, LevelChance, value => setupLevel = true);
+    if (setupLevel)
+      obj.SetLevel(Helper.RollLevel(spawner.m_minLevel, spawner.m_maxLevel, spawner.m_levelupChance));
+  }
+
   static GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation)
   {
     if (SpawnData != null)
       DataHelper.InitZDO(prefab, position, rotation, SpawnData);
-    var obj = UnityEngine.Object.Instantiate<GameObject>(prefab, position, rotation);
+    var obj = UnityEngine.Object.Instantiate(prefab, position, rotation);
     return obj;
   }
 

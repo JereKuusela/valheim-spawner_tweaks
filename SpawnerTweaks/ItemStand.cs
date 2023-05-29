@@ -6,17 +6,17 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(ItemStand))]
 public class ItemStandPatches
 {
-  private static int Name = "override_name".GetStableHashCode();
+  private static readonly int Name = "override_name".GetStableHashCode();
   // string
-  static int Respawn = "override_respawn".GetStableHashCode();
+  static readonly int Respawn = "override_respawn".GetStableHashCode();
   // float (minutes)
-  static int Changed = "override_changed".GetStableHashCode();
+  static readonly int Changed = "override_changed".GetStableHashCode();
   // long (timestamp)
-  static int Item = "item".GetStableHashCode();
+  static readonly int Item = "item".GetStableHashCode();
   // string
-  static int SpawnItem = "override_item".GetStableHashCode();
+  static readonly int SpawnItem = "override_item".GetStableHashCode();
   // string,int
-  static int Variant = "variant".GetStableHashCode();
+  static readonly int Variant = "variant".GetStableHashCode();
   // string
 
   [HarmonyPatch(nameof(ItemStand.Awake)), HarmonyPostfix]

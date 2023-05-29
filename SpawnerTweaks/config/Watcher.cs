@@ -14,17 +14,13 @@ namespace Service
 
   public class Watcher
   {
-    static Dictionary<string, byte[]> hashes = new();
+    static readonly Dictionary<string, byte[]> hashes = new();
     private static byte[] GetHash(string path)
     {
 
-      using (var md5 = MD5.Create())
-      {
-        using (var stream = File.OpenRead(path))
-        {
-          return md5.ComputeHash(stream);
-        }
-      }
+      using var md5 = MD5.Create();
+      using var stream = File.OpenRead(path);
+      return md5.ComputeHash(stream);
     }
     public static void Setup(string folder, string pattern, Action action)
     {

@@ -1,3 +1,6 @@
+- v1.14
+  - Improves compatibility with CLLC (spawn point level can be set).
+
 - v1.13
   - Fixes old spawner changes not working and causing errors.
 

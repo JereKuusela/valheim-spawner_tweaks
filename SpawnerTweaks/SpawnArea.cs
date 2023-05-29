@@ -11,39 +11,39 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(SpawnArea))]
 public class SpawnAreaPatches
 {
-  static int SpawnEffect = "override_spawn_effect".GetStableHashCode();
+  static readonly int SpawnEffect = "override_spawn_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static int SpawnLegacy = "override_spawn".GetStableHashCode();
+  static readonly int SpawnLegacy = "override_spawn".GetStableHashCode();
   // prefab,weight,minLevel,maxLevel|prefab,weight,minLevel,maxLevel|...
-  static int Spawn = "override_spawnarea_spawn".GetStableHashCode();
+  static readonly int Spawn = "override_spawnarea_spawn".GetStableHashCode();
   // prefab,weight,minLevel,maxLevel|prefab,weight,minLevel,maxLevel|...
-  static int RespawnLegacy = "override_respawn".GetStableHashCode();
+  static readonly int RespawnLegacy = "override_respawn".GetStableHashCode();
   // float (seconds)
-  static int Respawn = "override_spawnarea_respawn".GetStableHashCode();
+  static readonly int Respawn = "override_spawnarea_respawn".GetStableHashCode();
   // float (seconds)
-  static int MaxNear = "override_max_near".GetStableHashCode();
+  static readonly int MaxNear = "override_max_near".GetStableHashCode();
   // int
-  static int MaxTotal = "override_max_total".GetStableHashCode();
+  static readonly int MaxTotal = "override_max_total".GetStableHashCode();
   // int
-  static int LevelChance = "override_level_chance".GetStableHashCode();
+  static readonly int LevelChance = "override_level_chance".GetStableHashCode();
   // float (percent)
-  static int TriggerDistance = "override_trigger_distance".GetStableHashCode();
+  static readonly int TriggerDistance = "override_trigger_distance".GetStableHashCode();
   // float (meters)
-  static int SpawnRadius = "override_spawn_radius".GetStableHashCode();
+  static readonly int SpawnRadius = "override_spawn_radius".GetStableHashCode();
   // float (meters)
-  static int NearRadius = "override_near_radius".GetStableHashCode();
+  static readonly int NearRadius = "override_near_radius".GetStableHashCode();
   // float (meters)
-  static int FarRadius = "override_far_radius".GetStableHashCode();
+  static readonly int FarRadius = "override_far_radius".GetStableHashCode();
   // float (meters)
-  static int SpawnCondition = "override_spawn_condition".GetStableHashCode();
+  static readonly int SpawnCondition = "override_spawn_condition".GetStableHashCode();
   // flag (1 = day only, 2 = night only, 4 = ground only)
-  static int MinLevel = "override_minimum_level".GetStableHashCode();
+  static readonly int MinLevel = "override_minimum_level".GetStableHashCode();
   // int
-  static int MaxLevel = "override_maximum_level".GetStableHashCode();
+  static readonly int MaxLevel = "override_maximum_level".GetStableHashCode();
   // float (percent)
-  static int Health = "override_health".GetStableHashCode();
+  static readonly int Health = "override_health".GetStableHashCode();
   // float
-  static int Faction = "override_faction".GetStableHashCode();
+  static readonly int Faction = "override_faction".GetStableHashCode();
   // string
 
   [HarmonyPatch(nameof(SpawnArea.Awake)), HarmonyPostfix]
@@ -184,8 +184,8 @@ public class SpawnAreaPatches
     if (SpawnHealth.HasValue)
       Spawned.SetMaxHealth(SpawnHealth.Value);
   }
-  static int Tamed = "Tamed".GetStableHashCode();
-  static int Stack = "stack".GetStableHashCode();
+  static readonly int Tamed = "Tamed".GetStableHashCode();
+  static readonly int Stack = "stack".GetStableHashCode();
   [HarmonyPatch(nameof(SpawnArea.GetInstances)), HarmonyPrefix]
   static bool GetInstances(SpawnArea __instance, out int near, out int total)
   {

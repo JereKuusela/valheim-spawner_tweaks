@@ -7,21 +7,21 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(Pickable))]
 public class PickablePatches
 {
-  static int SpawnLegacy = "override_spawn".GetStableHashCode();
+  static readonly int SpawnLegacy = "override_spawn".GetStableHashCode();
   // prefab
-  static int Spawn = "override_pickable_spawn".GetStableHashCode();
+  static readonly int Spawn = "override_pickable_spawn".GetStableHashCode();
   // prefab
-  static int RespawnLegacy = "override_respawn".GetStableHashCode();
+  static readonly int RespawnLegacy = "override_respawn".GetStableHashCode();
   // int (minutes)
-  static int Respawn = "override_pickable_respawn".GetStableHashCode();
+  static readonly int Respawn = "override_pickable_respawn".GetStableHashCode();
   // int (minutes)
-  static int Amount = "override_amount".GetStableHashCode();
+  static readonly int Amount = "override_amount".GetStableHashCode();
   // int
-  static int Name = "override_name".GetStableHashCode();
+  static readonly int Name = "override_name".GetStableHashCode();
   // string
-  static int SpawnOffset = "override_spawn_offset".GetStableHashCode();
+  static readonly int SpawnOffset = "override_spawn_offset".GetStableHashCode();
   // float (meters)
-  static int UseEffect = "override_use_effect".GetStableHashCode();
+  static readonly int UseEffect = "override_use_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
   static void SetSpawn(Pickable obj, ZNetView view) =>
     Helper.Prefab(view, Spawn, SpawnLegacy, value => obj.m_itemPrefab = value);

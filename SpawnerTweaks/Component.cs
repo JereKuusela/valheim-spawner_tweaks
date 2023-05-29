@@ -6,7 +6,7 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(ZNetView))]
 public class ComponentPatches
 {
-  static int HashComponent = "override_component".GetStableHashCode();
+  static readonly int HashComponent = "override_component".GetStableHashCode();
   static void AddComponent<T>(ZNetView view) where T : MonoBehaviour
   {
     Object.Destroy(view.GetComponent<Interactable>() as MonoBehaviour);

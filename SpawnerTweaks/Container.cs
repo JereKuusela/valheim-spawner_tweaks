@@ -6,19 +6,19 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(Container))]
 public class ContainerPatches
 {
-  private static int Name = "override_name".GetStableHashCode();
+  private static readonly int Name = "override_name".GetStableHashCode();
   // string
-  static int MinAmount = "override_minimum_amount".GetStableHashCode();
+  static readonly int MinAmount = "override_minimum_amount".GetStableHashCode();
   // int
-  static int MaxAmount = "override_maximum_amount".GetStableHashCode();
+  static readonly int MaxAmount = "override_maximum_amount".GetStableHashCode();
   // int
-  static int Items = "override_items".GetStableHashCode();
+  static readonly int Items = "override_items".GetStableHashCode();
   // id,weight,min,max|...
-  static int Respawn = "override_respawn".GetStableHashCode();
+  static readonly int Respawn = "override_respawn".GetStableHashCode();
   // float (minutes)
-  static int Changed = "override_changed".GetStableHashCode();
+  static readonly int Changed = "override_changed".GetStableHashCode();
   // long (timestamp)
-  static int AddedItems = "addedDefaultItems".GetStableHashCode();
+  static readonly int AddedItems = "addedDefaultItems".GetStableHashCode();
   // bool
 
   [HarmonyPatch(nameof(Container.Awake)), HarmonyPostfix]

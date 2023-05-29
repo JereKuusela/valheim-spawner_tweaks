@@ -66,8 +66,10 @@ public class Helper
   public static EffectList.EffectData? ParseEffect(string data)
   {
     var split = data.Split(',');
-    EffectList.EffectData effect = new();
-    effect.m_prefab = GetPrefab(split[0]);
+    EffectList.EffectData effect = new()
+    {
+      m_prefab = GetPrefab(split[0])
+    };
     if (effect.m_prefab == null) return null;
     if (split.Length > 1 && int.TryParse(split[1], out var flag))
     {
@@ -119,8 +121,10 @@ public class Helper
   public static EffectList ParseEffects(string data)
   {
     var effects = data.Split('|').Select(effect => ParseEffect(effect)!).Where(effect => effect != null);
-    EffectList list = new();
-    list.m_effectPrefabs = effects.ToArray();
+    EffectList list = new()
+    {
+      m_effectPrefabs = effects.ToArray()
+    };
     return list;
   }
   public static Smelter.ItemConversion? ParseSmelterConversion(string data)
@@ -155,8 +159,10 @@ public class Helper
   public static SpawnArea.SpawnData? ParseSpawnData(string data)
   {
     var split = data.Split(',');
-    SpawnArea.SpawnData spawn = new();
-    spawn.m_prefab = GetPrefab(split[0]);
+    SpawnArea.SpawnData spawn = new()
+    {
+      m_prefab = GetPrefab(split[0])
+    };
     if (spawn.m_prefab == null) return null;
     spawn.m_weight = 1f;
     spawn.m_minLevel = 1;
@@ -182,11 +188,13 @@ public class Helper
   public static DropTable.DropData ParseDropData(string data)
   {
     var split = data.Split(',');
-    DropTable.DropData drop = new();
-    drop.m_item = GetPrefab(split[0]);
-    drop.m_weight = 1f;
-    drop.m_stackMin = 1;
-    drop.m_stackMax = 1;
+    DropTable.DropData drop = new()
+    {
+      m_item = GetPrefab(split[0]),
+      m_weight = 1f,
+      m_stackMin = 1,
+      m_stackMax = 1
+    };
     if (split.Length > 1)
       drop.m_weight = Float(split[1], 1f);
     if (split.Length > 2)
@@ -201,11 +209,13 @@ public class Helper
   public static CharacterDrop.Drop ParseCharacterDropData(string data)
   {
     var split = data.Split(',');
-    CharacterDrop.Drop drop = new();
-    drop.m_prefab = GetPrefab(split[0]);
-    drop.m_chance = 1f;
-    drop.m_amountMin = 1;
-    drop.m_amountMax = 1;
+    CharacterDrop.Drop drop = new()
+    {
+      m_prefab = GetPrefab(split[0]),
+      m_chance = 1f,
+      m_amountMin = 1,
+      m_amountMax = 1
+    };
     if (split.Length > 1)
       drop.m_chance = Float(split[1], 1f);
     if (split.Length > 2)
@@ -235,9 +245,11 @@ public class Helper
 
   public static Humanoid.ItemSet ParseItemSet(string data)
   {
-    Humanoid.ItemSet set = new();
-    set.m_name = "";
-    set.m_items = data.Split(',').Select(GetAttack).Where(item => item).ToArray();
+    Humanoid.ItemSet set = new()
+    {
+      m_name = "",
+      m_items = data.Split(',').Select(GetAttack).Where(item => item).ToArray()
+    };
     return set;
   }
   public static Humanoid.ItemSet[] ParseCharacterItemSets(string data)

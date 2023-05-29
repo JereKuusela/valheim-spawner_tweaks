@@ -5,15 +5,15 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(Fermenter))]
 public class FermenterPatches
 {
-  static int Conversion = "override_conversion".GetStableHashCode();
+  static readonly int Conversion = "override_conversion".GetStableHashCode();
   // from,to,amount|from,to,amount|...
-  static int Speed = "override_speed".GetStableHashCode();
+  static readonly int Speed = "override_speed".GetStableHashCode();
   // float
-  static int InputEffect = "override_input_effect".GetStableHashCode();
+  static readonly int InputEffect = "override_input_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static int UseEffect = "override_use_effect".GetStableHashCode();
+  static readonly int UseEffect = "override_use_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static int OutputEffect = "override_output_effect".GetStableHashCode();
+  static readonly int OutputEffect = "override_output_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
 
   [HarmonyPatch(nameof(Fermenter.Awake)), HarmonyPostfix]

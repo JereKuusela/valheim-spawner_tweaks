@@ -9,17 +9,17 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(Character))]
 public class CharacterPatches
 {
-  static int Faction = "override_faction".GetStableHashCode();
+  static readonly int Faction = "override_faction".GetStableHashCode();
   // string
-  static int Name = "override_name".GetStableHashCode();
+  static readonly int Name = "override_name".GetStableHashCode();
   // string
-  static int Boss = "override_boss".GetStableHashCode();
+  static readonly int Boss = "override_boss".GetStableHashCode();
   // bool (-1 default, 0 false, 1 true)
-  static int Resistances = "override_resistances".GetStableHashCode();
+  static readonly int Resistances = "override_resistances".GetStableHashCode();
   // type,modifier|...
-  static int Items = "override_items".GetStableHashCode();
+  static readonly int Items = "override_items".GetStableHashCode();
   // id,weight,min,max|...
-  static int Attacks = "override_attacks".GetStableHashCode();
+  static readonly int Attacks = "override_attacks".GetStableHashCode();
   // id|id|id|...
 
   [HarmonyPatch(nameof(Character.Awake)), HarmonyPostfix]

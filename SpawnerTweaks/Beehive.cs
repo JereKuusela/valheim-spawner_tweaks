@@ -5,37 +5,37 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(Beehive))]
 public class BeehivePatches
 {
-  static int MaxAmount = "override_maximum_amount".GetStableHashCode();
+  static readonly int MaxAmount = "override_maximum_amount".GetStableHashCode();
   // int
-  static int Spawn = "override_spawn".GetStableHashCode();
+  static readonly int Spawn = "override_spawn".GetStableHashCode();
   // int (hash)
-  static int Biome = "override_biome".GetStableHashCode();
+  static readonly int Biome = "override_biome".GetStableHashCode();
   // int (biome)
-  static int Speed = "override_speed".GetStableHashCode();
+  static readonly int Speed = "override_speed".GetStableHashCode();
   // float
-  static int MaxCover = "override_maximum_cover".GetStableHashCode();
+  static readonly int MaxCover = "override_maximum_cover".GetStableHashCode();
   // float
-  static int SpawnCondition = "override_spawn_condition".GetStableHashCode();
+  static readonly int SpawnCondition = "override_spawn_condition".GetStableHashCode();
   // flag (1 = day only)
-  static int CoverOffset = "override_cover_offset".GetStableHashCode();
+  static readonly int CoverOffset = "override_cover_offset".GetStableHashCode();
   // float,float,float (x,z,y)
-  static int SpawnOffset = "override_spawn_offset".GetStableHashCode();
+  static readonly int SpawnOffset = "override_spawn_offset".GetStableHashCode();
   // float,float,float (x,z,y)
-  static int SpawnEffect = "override_spawn_effect".GetStableHashCode();
+  static readonly int SpawnEffect = "override_spawn_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static int TextBiome = "override_text_biome".GetStableHashCode();
+  static readonly int TextBiome = "override_text_biome".GetStableHashCode();
   // string
-  static int TextSpace = "override_text_space".GetStableHashCode();
+  static readonly int TextSpace = "override_text_space".GetStableHashCode();
   // string
-  static int TextSleep = "override_text_sleep".GetStableHashCode();
+  static readonly int TextSleep = "override_text_sleep".GetStableHashCode();
   // string
-  static int TextHappy = "override_text_happy".GetStableHashCode();
+  static readonly int TextHappy = "override_text_happy".GetStableHashCode();
   // string
-  static int TextCheck = "override_text_check".GetStableHashCode();
+  static readonly int TextCheck = "override_text_check".GetStableHashCode();
   // string
-  static int TextExtract = "override_text_extract".GetStableHashCode();
+  static readonly int TextExtract = "override_text_extract".GetStableHashCode();
   // string
-  static int Name = "override_name".GetStableHashCode();
+  static readonly int Name = "override_name".GetStableHashCode();
   // string
 
   [HarmonyPatch(nameof(Beehive.Awake)), HarmonyPostfix]

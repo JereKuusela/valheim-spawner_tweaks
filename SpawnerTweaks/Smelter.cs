@@ -5,23 +5,23 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(Smelter))]
 public class SmelterPatches
 {
-  static int Conversion = "override_conversion".GetStableHashCode();
+  static readonly int Conversion = "override_conversion".GetStableHashCode();
   // from,to|from,to|...
-  static int MaxAmount = "override_maximum_amount".GetStableHashCode();
+  static readonly int MaxAmount = "override_maximum_amount".GetStableHashCode();
   // int
-  static int MaxFuel = "override_maximum_fuel".GetStableHashCode();
+  static readonly int MaxFuel = "override_maximum_fuel".GetStableHashCode();
   // int
-  static int Fuel = "override_fuel".GetStableHashCode();
+  static readonly int Fuel = "override_fuel".GetStableHashCode();
   // int (hash)
-  static int FuelUsage = "override_fuel_usage".GetStableHashCode();
+  static readonly int FuelUsage = "override_fuel_usage".GetStableHashCode();
   // int
-  static int Speed = "override_speed".GetStableHashCode();
+  static readonly int Speed = "override_speed".GetStableHashCode();
   // float
-  static int InputEffect = "override_input_effect".GetStableHashCode();
+  static readonly int InputEffect = "override_input_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static int FuelEffect = "override_fuel_effect".GetStableHashCode();
+  static readonly int FuelEffect = "override_fuel_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static int OutputEffect = "override_output_effect".GetStableHashCode();
+  static readonly int OutputEffect = "override_output_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
 
   [HarmonyPatch(nameof(Smelter.Awake)), HarmonyPostfix]
