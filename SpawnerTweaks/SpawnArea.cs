@@ -72,10 +72,10 @@ public class SpawnAreaPatches
     return __instance.GetComponent<Pickable>()?.m_picked != true;
   }
 
-  private static float? SpawnHealth = null;
-  private static string? SpawnFaction = null;
-  private static int? SpawnLevel = null;
-  private static ZDO? SpawnData = null;
+  private static float? SpawnHealth;
+  private static string? SpawnFaction;
+  private static int? SpawnLevel;
+  private static ZPackage? SpawnData;
   [HarmonyPatch(nameof(SpawnArea.SelectWeightedPrefab)), HarmonyPostfix]
   static void GetSpawnedData(SpawnArea __instance, SpawnArea.SpawnData __result)
   {
@@ -106,14 +106,14 @@ public class SpawnAreaPatches
         {
           SpawnHealth = arg;
           if (split.Length > 5)
-            SpawnData = DataHelper.Load(split[5]);
+            SpawnData = DataHelper.Deserialize(split[5]);
         }
         else
         {
           if (Enum.TryParse<Character.Faction>(split[4], true, out var faction))
             SpawnFaction = split[4];
           else
-            SpawnData = DataHelper.Load(split[4]);
+            SpawnData = DataHelper.Deserialize(split[4]);
           if (split.Length > 5)
             SpawnHealth = Helper.Float(split[5]);
         }

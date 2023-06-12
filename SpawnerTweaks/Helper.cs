@@ -299,6 +299,15 @@ public class Helper
     action(value);
     return true;
   }
+  public static bool HashList(ZNetView view, int hash, Action<int[]> action)
+  {
+    if (view == null || !view.IsValid()) return false;
+    var value = view.GetZDO().GetString(hash, "");
+    if (value == "") return false;
+    var list = value.Split(',').Select(s => s.GetStableHashCode()).ToArray();
+    action(list);
+    return true;
+  }
   public static void String(ZNetView view, int hash, int legacyHash, Action<string> action)
   {
     if (!String(view, hash, action))

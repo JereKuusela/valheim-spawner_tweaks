@@ -4,137 +4,77 @@ namespace Service;
 
 public class DataHelper
 {
-  public static void CopyData(ZDO from, ZDO to)
+  public static ZPackage? Deserialize(string data)
   {
-    to.m_floats = from.m_floats;
-    to.m_vec3 = from.m_vec3;
-    to.m_quats = from.m_quats;
-    to.m_ints = from.m_ints;
-    to.m_longs = from.m_longs;
-    to.m_strings = from.m_strings;
-    to.m_byteArrays = from.m_byteArrays;
-    to.IncreseDataRevision();
+    if (data == "") return null;
+    ZPackage pkg = new(data);
+    return pkg;
   }
-  public static void Deserialize(ZDO zdo, ZPackage pkg)
+  public static void InitZDO(GameObject obj, Vector3 position, Quaternion rotation, ZPackage data)
   {
-    int num = pkg.ReadInt();
+    if (!obj.TryGetComponent<ZNetView>(out var view)) return;
+    var prefab = view.GetPrefabName().GetStableHashCode();
+    ZNetView.m_initZDO = ZDOMan.instance.CreateNewZDO(position, prefab);
+    Load(data, ZNetView.m_initZDO);
+    ZNetView.m_initZDO.m_rotation = rotation.eulerAngles;
+    ZNetView.m_initZDO.Type = view.m_type;
+    ZNetView.m_initZDO.Distant = view.m_distant;
+    ZNetView.m_initZDO.Persistent = view.m_persistent;
+    ZNetView.m_initZDO.m_prefab = prefab;
+    ZNetView.m_initZDO.DataRevision = 1;
+  }
+  private static void Load(ZPackage pkg, ZDO zdo)
+  {
+    var id = zdo.m_uid;
+    var num = pkg.ReadInt();
     if ((num & 1) != 0)
     {
-      zdo.InitFloats();
-      int num2 = (int)pkg.ReadByte();
-      for (int i = 0; i < num2; i++)
-      {
-        int key = pkg.ReadInt();
-        zdo.m_floats[key] = pkg.ReadSingle();
-      }
-    }
-    else
-    {
-      zdo.ReleaseFloats();
+      var count = pkg.ReadByte();
+      var floats = ZDOExtraData.s_floats.ContainsKey(id) ? ZDOExtraData.s_floats[id] : new();
+      for (var i = 0; i < count; ++i)
+        floats[pkg.ReadInt()] = pkg.ReadSingle();
     }
     if ((num & 2) != 0)
     {
-      zdo.InitVec3();
-      int num3 = (int)pkg.ReadByte();
-      for (int j = 0; j < num3; j++)
-      {
-        int key2 = pkg.ReadInt();
-        zdo.m_vec3[key2] = pkg.ReadVector3();
-      }
-    }
-    else
-    {
-      zdo.ReleaseVec3();
+      var count = pkg.ReadByte();
+      var vecs = ZDOExtraData.s_vec3.ContainsKey(id) ? ZDOExtraData.s_vec3[id] : new();
+      for (var i = 0; i < count; ++i)
+        vecs[pkg.ReadInt()] = pkg.ReadVector3();
     }
     if ((num & 4) != 0)
     {
-      zdo.InitQuats();
-      int num4 = (int)pkg.ReadByte();
-      for (int k = 0; k < num4; k++)
-      {
-        int key3 = pkg.ReadInt();
-        zdo.m_quats[key3] = pkg.ReadQuaternion();
-      }
-    }
-    else
-    {
-      zdo.ReleaseQuats();
+      var count = pkg.ReadByte();
+      var quats = ZDOExtraData.s_quats.ContainsKey(id) ? ZDOExtraData.s_quats[id] : new();
+      for (var i = 0; i < count; ++i)
+        quats[pkg.ReadInt()] = pkg.ReadQuaternion();
     }
     if ((num & 8) != 0)
     {
-      zdo.InitInts();
-      int num5 = (int)pkg.ReadByte();
-      for (int l = 0; l < num5; l++)
-      {
-        int key4 = pkg.ReadInt();
-        zdo.m_ints[key4] = pkg.ReadInt();
-      }
-    }
-    else
-    {
-      zdo.ReleaseInts();
-    }
-    if ((num & 64) != 0)
-    {
-      zdo.InitLongs();
-      int num6 = (int)pkg.ReadByte();
-      for (int m = 0; m < num6; m++)
-      {
-        int key5 = pkg.ReadInt();
-        zdo.m_longs[key5] = pkg.ReadLong();
-      }
-    }
-    else
-    {
-      zdo.ReleaseLongs();
+      var count = pkg.ReadByte();
+      var ints = ZDOExtraData.s_ints.ContainsKey(id) ? ZDOExtraData.s_ints[id] : new();
+      for (var i = 0; i < count; ++i)
+        ints[pkg.ReadInt()] = pkg.ReadInt();
     }
     if ((num & 16) != 0)
     {
-      zdo.InitStrings();
-      int num7 = (int)pkg.ReadByte();
-      for (int n = 0; n < num7; n++)
-      {
-        int key6 = pkg.ReadInt();
-        zdo.m_strings[key6] = pkg.ReadString();
-      }
+      var count = pkg.ReadByte();
+      var strings = ZDOExtraData.s_strings.ContainsKey(id) ? ZDOExtraData.s_strings[id] : new();
+      for (var i = 0; i < count; ++i)
+        strings[pkg.ReadInt()] = pkg.ReadString();
     }
-    else
+    if ((num & 64) != 0)
     {
-      zdo.ReleaseStrings();
+      var count = pkg.ReadByte();
+      var longs = ZDOExtraData.s_longs.ContainsKey(id) ? ZDOExtraData.s_longs[id] : new();
+      for (var i = 0; i < count; ++i)
+        longs[pkg.ReadInt()] = pkg.ReadLong();
     }
     if ((num & 128) != 0)
     {
-      zdo.InitByteArrays();
-      int num8 = (int)pkg.ReadByte();
-      for (int num9 = 0; num9 < num8; num9++)
-      {
-        int key7 = pkg.ReadInt();
-        zdo.m_byteArrays[key7] = pkg.ReadByteArray();
-      }
-      return;
+      var count = pkg.ReadByte();
+      var byteArrays = ZDOExtraData.s_byteArrays.ContainsKey(id) ? ZDOExtraData.s_byteArrays[id] : new();
+      for (var i = 0; i < count; ++i)
+        byteArrays[pkg.ReadInt()] = pkg.ReadByteArray();
     }
-    zdo.ReleaseByteArrays();
-  }
-  public static ZDO? Load(string data)
-  {
-    ZDO zdo = new();
-    if (data != "")
-    {
-      ZPackage pkg = new(data);
-      Deserialize(zdo, pkg);
-    }
-    return zdo;
-  }
-  public static void InitZDO(GameObject prefab, Vector3 position, Quaternion rotation, ZDO data)
-  {
-    if (!prefab.TryGetComponent<ZNetView>(out var view)) return;
-    ZNetView.m_initZDO = ZDOMan.instance.CreateNewZDO(position);
-    DataHelper.CopyData(data.Clone(), ZNetView.m_initZDO);
-    ZNetView.m_initZDO.m_rotation = rotation;
-    ZNetView.m_initZDO.m_type = view.m_type;
-    ZNetView.m_initZDO.m_distant = view.m_distant;
-    ZNetView.m_initZDO.m_persistent = view.m_persistent;
-    ZNetView.m_initZDO.m_prefab = view.GetPrefabName().GetStableHashCode();
-    ZNetView.m_initZDO.m_dataRevision = 1;
   }
 }

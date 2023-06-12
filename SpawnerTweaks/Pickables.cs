@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
 
@@ -7,6 +8,7 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(Pickable))]
 public class PickablePatches
 {
+
   static readonly int SpawnLegacy = "override_spawn".GetStableHashCode();
   // prefab
   static readonly int Spawn = "override_pickable_spawn".GetStableHashCode();
@@ -23,6 +25,12 @@ public class PickablePatches
   // float (meters)
   static readonly int UseEffect = "override_use_effect".GetStableHashCode();
   // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
+  static readonly int SpawnCondition = "override_spawn_condition".GetStableHashCode();
+  // flag (1 = day only, 2 = night only)
+  static readonly int RequiredGlobalKey = "override_required_globalkey".GetStableHashCode();
+  // hash1,hash2,hash3,...
+  static readonly int ForbiddenGlobalKey = "override_forbidden_globalkey".GetStableHashCode();
+  // hash1,hash2,hash3,...
   static void SetSpawn(Pickable obj, ZNetView view) =>
     Helper.Prefab(view, Spawn, SpawnLegacy, value => obj.m_itemPrefab = value);
   static void SetRespawn(Pickable obj, ZNetView view) =>
@@ -49,6 +57,20 @@ public class PickablePatches
     SetSpawnOffset(__instance, view);
     SetUseEffect(__instance, view);
   }
+  [HarmonyPatch(nameof(Pickable.Awake)), HarmonyPostfix]
+  static void StartRespawnLoop(Pickable __instance)
+  {
+    if (!Configuration.configPickable.Value) return;
+    var view = __instance.GetComponent<ZNetView>();
+    if (!view || !view.IsValid()) return;
+    if (__instance.m_respawnTimeMinutes == 0) return;
+    var checkPickable = false;
+    Helper.Int(view, SpawnCondition, value => checkPickable = true);
+    Helper.String(view, RequiredGlobalKey, value => checkPickable = true);
+    Helper.String(view, ForbiddenGlobalKey, value => checkPickable = true);
+    if (checkPickable)
+      __instance.InvokeRepeating("CheckCondition", UnityEngine.Random.Range(1f, 5f), 30f);
+  }
 
   private static void SetStack(ItemDrop obj, int amount) => obj?.SetStack(amount);
   [HarmonyPatch(nameof(Pickable.Drop)), HarmonyTranspiler]
@@ -67,5 +89,55 @@ public class PickablePatches
       return false;
     }
     return true;
+  }
+}
+
+public static class PickableExtensions
+{
+  static readonly int SpawnCondition = "override_spawn_condition".GetStableHashCode();
+  // flag (1 = day only, 2 = night only)
+  static readonly int RequiredGlobalKey = "override_required_globalkey".GetStableHashCode();
+  // hash1,hash2,hash3,...
+  static readonly int ForbiddenGlobalKey = "override_forbidden_globalkey".GetStableHashCode();
+  // hash1,hash2,hash3,...
+  private static void SetPicked(Pickable obj, bool value)
+  {
+    obj.m_picked = value;
+    if (obj.m_hideWhenPicked) obj.m_hideWhenPicked.SetActive(!value);
+  }
+  public static void CheckCondition(this Pickable obj)
+  {
+    var view = obj.m_nview;
+    if (!view || !view.IsValid()) return;
+    var picked = view.GetZDO().GetBool(ZDOVars.s_picked, false);
+    if (picked) return;
+    Helper.Int(view, SpawnCondition, value =>
+    {
+      if (value == 1 && EnvMan.instance.IsNight())
+        picked = true;
+      if (value == 2 && EnvMan.instance.IsDay())
+        picked = true;
+    });
+    if (!picked)
+    {
+      Helper.HashList(view, RequiredGlobalKey, value =>
+      {
+        var globalKeys = ZoneSystem.instance.GetGlobalKeys().Select(s => s.GetStableHashCode()).ToHashSet();
+        foreach (var key in value)
+          if (!globalKeys.Contains(key))
+            picked = true;
+      });
+    }
+    if (!picked)
+    {
+      Helper.HashList(view, ForbiddenGlobalKey, value =>
+      {
+        var globalKeys = ZoneSystem.instance.GetGlobalKeys().Select(s => s.GetStableHashCode()).ToHashSet();
+        foreach (var key in value)
+          if (globalKeys.Contains(key))
+            picked = true;
+      });
+    }
+    SetPicked(obj, picked);
   }
 }

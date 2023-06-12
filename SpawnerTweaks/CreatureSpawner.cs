@@ -71,14 +71,14 @@ public class CreatureSpawnerPatches
     Helper.String(view, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
   }
 
-  private static ZDO? SpawnData = null;
+  private static ZPackage? SpawnData = null;
 
 
   [HarmonyPatch(nameof(CreatureSpawner.Spawn)), HarmonyPrefix]
   static void GetValues(CreatureSpawner __instance)
   {
     SpawnData = null;
-    Helper.String(__instance.m_nview, Data, value => SpawnData = DataHelper.Load(value));
+    Helper.String(__instance.m_nview, Data, value => SpawnData = DataHelper.Deserialize(value));
   }
 
   [HarmonyPatch(nameof(CreatureSpawner.Spawn)), HarmonyPostfix]

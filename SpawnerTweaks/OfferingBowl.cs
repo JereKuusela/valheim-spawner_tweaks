@@ -168,14 +168,14 @@ public class OfferingBowlPatches
     view.GetZDO().Set(SpawnTime, ZNet.instance.GetTime().Ticks);
   }
 
-  private static ZDO? SpawnData = null;
+  private static ZPackage? SpawnData = null;
 
   [HarmonyPatch(nameof(OfferingBowl.DelayedSpawnBoss)), HarmonyPrefix]
   static void GetValues(OfferingBowl __instance)
   {
     SpawnData = null;
     var view = __instance.GetComponentInParent<ZNetView>();
-    Helper.String(view, Data, value => SpawnData = DataHelper.Load(value));
+    Helper.String(view, Data, value => SpawnData = DataHelper.Deserialize(value));
   }
   static void SetupSpawn(BaseAI baseAI, OfferingBowl bowl)
   {
