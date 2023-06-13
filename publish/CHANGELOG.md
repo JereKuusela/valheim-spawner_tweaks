@@ -1,3 +1,6 @@
+- v1.16
+  - Fixes custom data.
+
 - v1.15
   - Updated for the new game version.
 
