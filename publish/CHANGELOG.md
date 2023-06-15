@@ -1,3 +1,6 @@
+- v1.17
+  - Fixes some custom data not being loaded.
+
 - v1.16
   - Fixes custom data.
 
