@@ -1,29 +1,17 @@
 using System;
 using HarmonyLib;
+using Service;
 
 namespace SpawnerTweaks;
 
 [HarmonyPatch(typeof(ItemStand))]
 public class ItemStandPatches
 {
-  private static readonly int Name = "override_name".GetStableHashCode();
-  // string
-  static readonly int Respawn = "override_respawn".GetStableHashCode();
-  // float (minutes)
-  static readonly int Changed = "override_changed".GetStableHashCode();
-  // long (timestamp)
-  static readonly int Item = "item".GetStableHashCode();
-  // string
-  static readonly int SpawnItem = "override_item".GetStableHashCode();
-  // string,int
-  static readonly int Variant = "variant".GetStableHashCode();
-  // string
-
   [HarmonyPatch(nameof(ItemStand.Awake)), HarmonyPostfix]
   static void Setup(ItemStand __instance)
   {
     if (!Configuration.configItemStand.Value) return;
-    Helper.String(__instance.m_nview, Name, value => __instance.m_name = value);
+    Helper.String(__instance.m_nview, Hash.Name, value => __instance.m_name = value);
   }
 
   [HarmonyPatch(nameof(ItemStand.UpdateVisual)), HarmonyPrefix]
@@ -34,10 +22,10 @@ public class ItemStandPatches
     var view = obj.m_nview;
     if (!Helper.Owner(view)) return;
     var respawnContents = false;
-    Helper.Float(obj.m_nview, Respawn, respawn =>
+    Helper.Float(obj.m_nview, Hash.Respawn, respawn =>
     {
       respawnContents = true;
-      Helper.Long(obj.m_nview, Changed, changed =>
+      Helper.Long(obj.m_nview, Hash.Changed, changed =>
       {
         var d = new DateTime(changed);
         respawnContents = (ZNet.instance.GetTime() - d).TotalMinutes >= respawn;
@@ -46,15 +34,15 @@ public class ItemStandPatches
     if (respawnContents)
     {
       if (obj.HaveAttachment()) obj.DropItem();
-      view.GetZDO().Set(Changed, DateTime.MaxValue.Ticks / 2);
-      Helper.String(view, SpawnItem, value =>
+      view.GetZDO().Set(Hash.Changed, DateTime.MaxValue.Ticks / 2);
+      Helper.String(view, Hash.Item, value =>
       {
         var split = value.Split(',');
-        view.GetZDO().Set(Item, split[0]);
+        view.GetZDO().Set(ZDOVars.s_item, split[0]);
         if (split.Length > 1 && int.TryParse(split[1], out var variant))
-          view.GetZDO().Set(Variant, variant);
+          view.GetZDO().Set(ZDOVars.s_variant, variant);
         else
-          view.GetZDO().Set(Variant, 0);
+          view.GetZDO().Set(ZDOVars.s_variant, 0);
       });
     }
   }
@@ -66,9 +54,9 @@ public class ItemStandPatches
     var view = obj.m_nview;
     if (!Helper.Owner(view)) return;
     if (!obj.HaveAttachment()) return;
-    Helper.Float(view, Respawn, value =>
+    Helper.Float(view, Hash.Respawn, value =>
     {
-      view.GetZDO().Set(Changed, ZNet.instance.GetTime().Ticks);
+      view.GetZDO().Set(Hash.Changed, ZNet.instance.GetTime().Ticks);
     });
   }
 }

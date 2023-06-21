@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
+using Service;
 using UnityEngine;
 
 namespace SpawnerTweaks;
@@ -9,36 +10,23 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(Character))]
 public class CharacterPatches
 {
-  static readonly int Faction = "override_faction".GetStableHashCode();
-  // string
-  static readonly int Name = "override_name".GetStableHashCode();
-  // string
-  static readonly int Boss = "override_boss".GetStableHashCode();
-  // bool (-1 default, 0 false, 1 true)
-  static readonly int Resistances = "override_resistances".GetStableHashCode();
-  // type,modifier|...
-  static readonly int Items = "override_items".GetStableHashCode();
-  // id,weight,min,max|...
-  static readonly int Attacks = "override_attacks".GetStableHashCode();
-  // id|id|id|...
-
   [HarmonyPatch(nameof(Character.Awake)), HarmonyPostfix]
   static void Setup(Character __instance)
   {
     if (!Configuration.configCharacter.Value) return;
-    Helper.String(__instance.m_nview, Faction, value =>
+    Helper.String(__instance.m_nview, Hash.Faction, value =>
     {
       if (Enum.TryParse<Character.Faction>(value, true, out var faction))
         __instance.m_faction = faction;
     });
-    Helper.Int(__instance.m_nview, Boss, value => __instance.m_boss = value > 0);
-    Helper.String(__instance.m_nview, Name, value => __instance.m_name = value);
-    Helper.String(__instance.m_nview, Resistances, value => __instance.m_damageModifiers = Helper.ParseDamageModifiers(value));
+    Helper.Int(__instance.m_nview, Hash.Boss, value => __instance.m_boss = value > 0);
+    Helper.String(__instance.m_nview, Hash.Name, value => __instance.m_name = value);
+    Helper.String(__instance.m_nview, Hash.Resistances, value => __instance.m_damageModifiers = Helper.ParseDamageModifiers(value));
     if (__instance.TryGetComponent<CharacterDrop>(out var drop))
-      Helper.String(__instance.m_nview, Items, value => drop.m_drops = Helper.ParseCharacterDropsData(value));
+      Helper.String(__instance.m_nview, Hash.Items, value => drop.m_drops = Helper.ParseCharacterDropsData(value));
     if (__instance.TryGetComponent<Humanoid>(out var humanoid))
     {
-      Helper.String(__instance.m_nview, Attacks, value =>
+      Helper.String(__instance.m_nview, Hash.Attacks, value =>
       {
         var sets = Helper.ParseCharacterItemSets(value);
         if (sets.Length == 0) return;
@@ -63,6 +51,6 @@ public class CharacterPatches
   static IEnumerable<CodeInstruction> DisableMaxHealthSetup(IEnumerable<CodeInstruction> instructions)
   {
     return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Character), nameof(Character.SetupMaxHealth))))
-      .Set(OpCodes.Call, Transpilers.EmitDelegate(((Character _) => { })).operand).InstructionEnumeration();
+      .Set(OpCodes.Call, Transpilers.EmitDelegate((Character _) => { }).operand).InstructionEnumeration();
   }
 }

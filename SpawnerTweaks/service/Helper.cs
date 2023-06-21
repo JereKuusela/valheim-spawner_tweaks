@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
-namespace SpawnerTweaks;
+namespace Service;
 public class Helper
 {
   public static float Float(string arg, float defaultValue)
@@ -145,7 +145,7 @@ public class Helper
     {
       m_from = GetItem(split[0]),
       m_to = GetItem(split[1]),
-      m_producedItems = split.Length > 2 ? Helper.Int(split[2], 1) : 1
+      m_producedItems = split.Length > 2 ? Int(split[2], 1) : 1
     };
   }
   public static List<Smelter.ItemConversion> ParseSmelterConversions(string data)
@@ -234,12 +234,12 @@ public class Helper
   }
   public static List<DropTable.DropData> ParseDropsData(string data)
   {
-    var drops = data.Split('|').Select(drop => ParseDropData(drop)).Where(drop => drop.m_item != null);
+    var drops = data.Split('|').Select(ParseDropData).Where(drop => drop.m_item != null);
     return drops.ToList();
   }
   public static List<CharacterDrop.Drop> ParseCharacterDropsData(string data)
   {
-    var drops = data.Split('|').Select(drop => ParseCharacterDropData(drop)).Where(drop => drop.m_prefab != null);
+    var drops = data.Split('|').Select(ParseCharacterDropData).Where(drop => drop.m_prefab != null);
     return drops.ToList();
   }
 
@@ -254,14 +254,14 @@ public class Helper
   }
   public static Humanoid.ItemSet[] ParseCharacterItemSets(string data)
   {
-    var sets = data.Split('|').Select(set => ParseItemSet(set)).Where(set => set.m_items.Length > 0);
+    var sets = data.Split('|').Select(ParseItemSet).Where(set => set.m_items.Length > 0);
     return sets.ToArray();
   }
   public static bool Float(ZNetView view, int hash, Action<float> action)
   {
     if (view == null || !view.IsValid()) return false;
-    var value = view.GetZDO().GetFloat(hash, -1f);
-    if (value < 0f) return false;
+    var value = view.GetZDO().GetFloat(hash, 0f);
+    if (value == 0f) return false;
     action(value);
     return true;
   }
@@ -274,27 +274,28 @@ public class Helper
   public static void Long(ZNetView view, int hash, Action<long> action)
   {
     if (view == null || !view.IsValid()) return;
-    var value = view.GetZDO().GetLong(hash, -1L);
-    if (value < 0L) return;
+    var value = view.GetZDO().GetLong(hash);
+    if (value == 0L) return;
     action(value);
   }
   public static void Int(ZNetView view, int hash, Action<int> action)
   {
     if (view == null || !view.IsValid()) return;
-    var value = view.GetZDO().GetInt(hash, -1);
-    if (value < 0) return;
+    var value = view.GetZDO().GetInt(hash);
+    if (value == 0) return;
     action(value);
   }
-  public static void Bool(ZNetView view, int hash, Action<bool> action)
+  public static void Bool(ZNetView view, int hash, Action action)
   {
     if (view == null || !view.IsValid()) return;
-    var value = view.GetZDO().GetBool(hash, false);
-    action(value);
+    var value = view.GetZDO().GetBool(hash);
+    if (!value) return;
+    action();
   }
   public static bool String(ZNetView view, int hash, Action<string> action)
   {
     if (view == null || !view.IsValid()) return false;
-    var value = view.GetZDO().GetString(hash, "");
+    var value = view.GetZDO().GetString(hash);
     if (value == "") return false;
     action(value);
     return true;
@@ -302,7 +303,7 @@ public class Helper
   public static bool HashList(ZNetView view, int hash, Action<int[]> action)
   {
     if (view == null || !view.IsValid()) return false;
-    var value = view.GetZDO().GetString(hash, "");
+    var value = view.GetZDO().GetString(hash);
     if (value == "") return false;
     var list = value.Split(',').Select(s => s.GetStableHashCode()).ToArray();
     action(list);
@@ -316,8 +317,8 @@ public class Helper
   public static bool Prefab(ZNetView view, int hash, Action<GameObject> action)
   {
     if (view == null || !view.IsValid()) return false;
-    var value = view.GetZDO().GetInt(hash, 0);
-    var prefab = Helper.GetPrefab(value);
+    var value = view.GetZDO().GetInt(hash);
+    var prefab = GetPrefab(value);
     if (prefab == null) return false;
     action(prefab);
     return true;
@@ -331,8 +332,8 @@ public class Helper
   public static void Item(ZNetView view, int hash, Action<ItemDrop> action)
   {
     if (view == null || !view.IsValid()) return;
-    var value = view.GetZDO().GetInt(hash, 0);
-    var item = Helper.GetItem(value);
+    var value = view.GetZDO().GetInt(hash);
+    var item = GetItem(value);
     if (item == null) return;
     action(item);
   }
@@ -350,11 +351,11 @@ public class Helper
     {
       var split = value.Split(',');
       var pos = initial.localPosition;
-      pos.x = Helper.Float(split[0], pos.x);
+      pos.x = Float(split[0], pos.x);
       if (split.Length > 1)
-        pos.z = Helper.Float(split[1], pos.z);
+        pos.z = Float(split[1], pos.z);
       if (split.Length > 2)
-        pos.y = Helper.Float(split[2], pos.y);
+        pos.y = Float(split[2], pos.y);
       initial.localPosition = pos;
     });
     action(initial);

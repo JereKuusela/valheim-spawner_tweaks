@@ -2,47 +2,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
+using Service;
 
 namespace SpawnerTweaks;
 
 [HarmonyPatch(typeof(Pickable))]
 public class PickablePatches
 {
-
-  static readonly int SpawnLegacy = "override_spawn".GetStableHashCode();
-  // prefab
-  static readonly int Spawn = "override_pickable_spawn".GetStableHashCode();
-  // prefab
-  static readonly int RespawnLegacy = "override_respawn".GetStableHashCode();
-  // int (minutes)
-  static readonly int Respawn = "override_pickable_respawn".GetStableHashCode();
-  // int (minutes)
-  static readonly int Amount = "override_amount".GetStableHashCode();
-  // int
-  static readonly int Name = "override_name".GetStableHashCode();
-  // string
-  static readonly int SpawnOffset = "override_spawn_offset".GetStableHashCode();
-  // float (meters)
-  static readonly int UseEffect = "override_use_effect".GetStableHashCode();
-  // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static readonly int SpawnCondition = "override_spawn_condition".GetStableHashCode();
-  // flag (1 = day only, 2 = night only)
-  static readonly int RequiredGlobalKey = "override_required_globalkey".GetStableHashCode();
-  // hash1,hash2,hash3,...
-  static readonly int ForbiddenGlobalKey = "override_forbidden_globalkey".GetStableHashCode();
-  // hash1,hash2,hash3,...
   static void SetSpawn(Pickable obj, ZNetView view) =>
-    Helper.Prefab(view, Spawn, SpawnLegacy, value => obj.m_itemPrefab = value);
+    Helper.Prefab(view, Hash.PickableSpawn, Hash.Spawn, value => obj.m_itemPrefab = value);
   static void SetRespawn(Pickable obj, ZNetView view) =>
-    Helper.Float(view, Respawn, RespawnLegacy, value => obj.m_respawnTimeMinutes = (int)value);
+    Helper.Float(view, Hash.PickableRespawn, Hash.Respawn, value => obj.m_respawnTimeMinutes = (int)value);
   static void SetAmount(Pickable obj, ZNetView view) =>
-    Helper.Int(view, Amount, value => obj.m_amount = value);
+    Helper.Int(view, Hash.Amount, value => obj.m_amount = value);
   static void SetName(Pickable obj, ZNetView view) =>
-    Helper.String(view, Name, value => obj.m_overrideName = value);
+    Helper.String(view, Hash.Name, value => obj.m_overrideName = value);
   static void SetSpawnOffset(Pickable obj, ZNetView view) =>
-    Helper.Float(view, SpawnOffset, value => obj.m_spawnOffset = value);
+    Helper.Float(view, Hash.SpawnOffset, value => obj.m_spawnOffset = value);
   static void SetUseEffect(Pickable obj, ZNetView view) =>
-    Helper.String(view, UseEffect, value => obj.m_pickEffector = Helper.ParseEffects(value));
+    Helper.String(view, Hash.UseEffect, value => obj.m_pickEffector = Helper.ParseEffects(value));
   // Must be prefix because Awake starts respawn loop only if respawning.
   [HarmonyPatch(nameof(Pickable.Awake)), HarmonyPrefix]
   static void Setup(Pickable __instance)
@@ -65,9 +43,9 @@ public class PickablePatches
     if (!view || !view.IsValid()) return;
     if (__instance.m_respawnTimeMinutes == 0) return;
     var checkPickable = false;
-    Helper.Int(view, SpawnCondition, value => checkPickable = true);
-    Helper.String(view, RequiredGlobalKey, value => checkPickable = true);
-    Helper.String(view, ForbiddenGlobalKey, value => checkPickable = true);
+    Helper.Int(view, Hash.SpawnCondition, value => checkPickable = true);
+    Helper.String(view, Hash.RequiredGlobalKey, value => checkPickable = true);
+    Helper.String(view, Hash.ForbiddenGlobalKey, value => checkPickable = true);
     if (checkPickable)
       __instance.InvokeRepeating("CheckCondition", UnityEngine.Random.Range(1f, 5f), 30f);
   }

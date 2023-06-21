@@ -10,34 +10,10 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(CreatureSpawner))]
 public class CreatureSpawnerPatches
 {
-  static readonly int Spawn = "override_spawn".GetStableHashCode();
-  // prefab
-  static readonly int Respawn = "override_respawn".GetStableHashCode();
-  // float (minutes)
-  static readonly int MinLevel = "override_minimum_level".GetStableHashCode();
-  // int
-  static readonly int MaxLevel = "override_maximum_level".GetStableHashCode();
-  // int
-  static readonly int SpawnCondition = "override_spawn_condition".GetStableHashCode();
-  // flag (1 = day only, 2 = night only)
-  static readonly int TriggerDistance = "override_trigger_distance".GetStableHashCode();
-  // float (meters)
-  static readonly int TriggerNoise = "override_trigger_noise".GetStableHashCode();
-  // float (meters)
-  static readonly int SpawnEffect = "override_spawn_effect".GetStableHashCode();
-  // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static readonly int LevelChance = "override_level_chance".GetStableHashCode();
-  // float (percent)
-  static readonly int Health = "override_health".GetStableHashCode();
-  // float
-  static readonly int Faction = "override_faction".GetStableHashCode();
-  // string
-  static readonly int Data = "override_data".GetStableHashCode();
-  // string
 
   static void HandleSpawn(CreatureSpawner obj)
   {
-    var hash = obj.m_nview.GetZDO().GetInt(Spawn, 0);
+    var hash = obj.m_nview.GetZDO().GetInt(Hash.Spawn, 0);
     if (hash == 0) return;
     var prefab = ZNetScene.instance.GetPrefab(hash);
     if (!prefab) return;
@@ -52,11 +28,11 @@ public class CreatureSpawnerPatches
     var obj = __instance;
     var view = obj.m_nview;
     if (!view || !view.IsValid()) return;
-    Helper.Float(view, Respawn, value => obj.m_respawnTimeMinuts = value);
+    Helper.Float(view, Hash.Respawn, value => obj.m_respawnTimeMinuts = value);
     HandleSpawn(__instance);
-    Helper.Int(view, MaxLevel, value => obj.m_maxLevel = value);
-    Helper.Int(view, MinLevel, value => obj.m_minLevel = value);
-    Helper.Int(view, SpawnCondition, value =>
+    Helper.Int(view, Hash.MaxLevel, value => obj.m_maxLevel = value);
+    Helper.Int(view, Hash.MinLevel, value => obj.m_minLevel = value);
+    Helper.Int(view, Hash.SpawnCondition, value =>
     {
       obj.m_spawnAtNight = true;
       obj.m_spawnAtDay = true;
@@ -65,10 +41,10 @@ public class CreatureSpawnerPatches
       if (value == 2)
         obj.m_spawnAtDay = false;
     });
-    Helper.Float(view, TriggerDistance, value => obj.m_triggerDistance = value);
-    Helper.Float(view, TriggerNoise, value => obj.m_triggerNoise = value);
-    Helper.Float(view, LevelChance, value => obj.m_levelupChance = value);
-    Helper.String(view, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
+    Helper.Float(view, Hash.TriggerDistance, value => obj.m_triggerDistance = value);
+    Helper.Float(view, Hash.TriggerNoise, value => obj.m_triggerNoise = value);
+    Helper.Float(view, Hash.LevelChance, value => obj.m_levelupChance = value);
+    Helper.String(view, Hash.SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
   }
 
   private static ZPackage? SpawnData = null;
@@ -78,7 +54,7 @@ public class CreatureSpawnerPatches
   static void GetValues(CreatureSpawner __instance)
   {
     SpawnData = null;
-    Helper.String(__instance.m_nview, Data, value => SpawnData = DataHelper.Deserialize(value));
+    Helper.String(__instance.m_nview, Hash.Data, value => SpawnData = DataHelper.Deserialize(value));
   }
 
   [HarmonyPatch(nameof(CreatureSpawner.Spawn)), HarmonyPostfix]
@@ -91,10 +67,10 @@ public class CreatureSpawnerPatches
     // Level must be done here to override CLLC changes.
     OverrideLevel(__instance, obj);
     var view = __instance.m_nview;
-    Helper.Float(view, Health, obj.SetMaxHealth);
-    Helper.String(view, Faction, value =>
+    Helper.Float(view, Hash.Health, obj.SetMaxHealth);
+    Helper.String(view, Hash.Faction, value =>
     {
-      obj.m_nview.GetZDO().Set(Faction, value);
+      obj.m_nview.GetZDO().Set(Hash.Faction, value);
       if (Enum.TryParse<Character.Faction>(value, true, out var faction))
         obj.m_faction = faction;
     });
@@ -104,11 +80,11 @@ public class CreatureSpawnerPatches
   {
     var view = spawner.m_nview;
     var setupLevel = false;
-    Helper.Int(view, MaxLevel, value => setupLevel = true);
+    Helper.Int(view, Hash.MaxLevel, value => setupLevel = true);
     if (!setupLevel)
-      Helper.Int(view, MinLevel, value => setupLevel = true);
+      Helper.Int(view, Hash.MinLevel, value => setupLevel = true);
     if (!setupLevel)
-      Helper.Float(view, LevelChance, value => setupLevel = true);
+      Helper.Float(view, Hash.LevelChance, value => setupLevel = true);
     if (setupLevel)
       obj.SetLevel(Helper.RollLevel(spawner.m_minLevel, spawner.m_maxLevel, spawner.m_levelupChance));
   }
@@ -135,16 +111,15 @@ public class CreatureSpawnerPatches
 [HarmonyPatch(typeof(CreatureSpawner), nameof(CreatureSpawner.UpdateSpawner))]
 public class CreatureSpawnerUpdateSpawner
 {
-
-  static KeyValuePair<int, int> SpawnId = ZDO.GetHashZDOID("spawn_id");
-
   static void Prefix(CreatureSpawner __instance, ref float __state)
   {
-    __state = 0.0f;
-    if (__instance.m_respawnTimeMinuts != 0f && __instance.m_nview.GetZDO().GetZDOID(SpawnId).IsNone())
+    __state = 0f;
+    if (__instance.m_respawnTimeMinuts == 0f) return;
+    var firstSpawn = __instance.m_nview.GetZDO().GetConnection() == null;
+    if (firstSpawn)
     {
       __state = __instance.m_respawnTimeMinuts;
-      __instance.m_respawnTimeMinuts = 0;
+      __instance.m_respawnTimeMinuts = 0f;
     }
   }
   static void Postfix(CreatureSpawner __instance, float __state)

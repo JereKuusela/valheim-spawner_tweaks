@@ -1,31 +1,19 @@
 using System;
 using HarmonyLib;
+using Service;
 
 namespace SpawnerTweaks;
 
 [HarmonyPatch(typeof(Container))]
 public class ContainerPatches
 {
-  private static readonly int Name = "override_name".GetStableHashCode();
-  // string
-  static readonly int MinAmount = "override_minimum_amount".GetStableHashCode();
-  // int
-  static readonly int MaxAmount = "override_maximum_amount".GetStableHashCode();
-  // int
-  static readonly int Items = "override_items".GetStableHashCode();
-  // id,weight,min,max|...
-  static readonly int Respawn = "override_respawn".GetStableHashCode();
-  // float (minutes)
-  static readonly int Changed = "override_changed".GetStableHashCode();
-  // long (timestamp)
-  static readonly int AddedItems = "addedDefaultItems".GetStableHashCode();
-  // bool
+
 
   [HarmonyPatch(nameof(Container.Awake)), HarmonyPostfix]
   static void Setup(Container __instance)
   {
     if (!Configuration.configContainer.Value) return;
-    Helper.String(__instance.m_nview, Name, value => __instance.m_name = value);
+    Helper.String(__instance.m_nview, Hash.Name, value => __instance.m_name = value);
   }
 
   [HarmonyPatch(nameof(Container.AddDefaultItems)), HarmonyPrefix]
@@ -33,9 +21,9 @@ public class ContainerPatches
   {
     if (!Configuration.configContainer.Value) return;
     var obj = __instance;
-    Helper.Int(obj.m_nview, MinAmount, value => obj.m_defaultItems.m_dropMin = value);
-    Helper.Int(obj.m_nview, MaxAmount, value => obj.m_defaultItems.m_dropMax = value);
-    Helper.String(obj.m_nview, Items, value =>
+    Helper.Int(obj.m_nview, Hash.MinAmount, value => obj.m_defaultItems.m_dropMin = value);
+    Helper.Int(obj.m_nview, Hash.MaxAmount, value => obj.m_defaultItems.m_dropMax = value);
+    Helper.String(obj.m_nview, Hash.Items, value =>
     {
       obj.m_defaultItems.m_drops = Helper.ParseDropsData(value);
       obj.m_defaultItems.m_oneOfEach = true;
@@ -49,10 +37,10 @@ public class ContainerPatches
     var obj = __instance;
     if (!Helper.Owner(__instance.m_nview)) return;
     var respawnContents = false;
-    Helper.Float(obj.m_nview, Respawn, respawn =>
+    Helper.Float(obj.m_nview, Hash.Respawn, respawn =>
     {
       respawnContents = true;
-      Helper.Long(obj.m_nview, Changed, changed =>
+      Helper.Long(obj.m_nview, Hash.Changed, changed =>
       {
         var d = new DateTime(changed);
         respawnContents = (ZNet.instance.GetTime() - d).TotalMinutes >= respawn;
@@ -60,11 +48,11 @@ public class ContainerPatches
     });
     if (respawnContents)
     {
-      obj.m_nview.GetZDO().Set(Changed, DateTime.MaxValue.Ticks / 2);
-      obj.m_nview.GetZDO().Set(AddedItems, false);
+      obj.m_nview.GetZDO().Set(Hash.Changed, DateTime.MaxValue.Ticks / 2);
+      obj.m_nview.GetZDO().Set(ZDOVars.s_addedDefaultItems, false);
       obj.m_inventory.RemoveAll();
       obj.AddDefaultItems();
-      obj.m_nview.GetZDO().Set(AddedItems, true);
+      obj.m_nview.GetZDO().Set(ZDOVars.s_addedDefaultItems, true);
     }
   }
 
@@ -73,12 +61,11 @@ public class ContainerPatches
   {
     if (__instance.m_loading) return;
     if (!Configuration.configContainer.Value) return;
-    Helper.Bool(__instance.m_nview, AddedItems, value =>
+    Helper.Bool(__instance.m_nview, ZDOVars.s_addedDefaultItems, () =>
     {
-      if (!value) return;
-      Helper.Float(__instance.m_nview, Respawn, value =>
+      Helper.Float(__instance.m_nview, Hash.Respawn, value =>
       {
-        __instance.m_nview.GetZDO().Set(Changed, ZNet.instance.GetTime().Ticks);
+        __instance.m_nview.GetZDO().Set(Hash.Changed, ZNet.instance.GetTime().Ticks);
       });
     });
   }

@@ -1,4 +1,5 @@
 using HarmonyLib;
+using Service;
 using UnityEngine;
 
 namespace SpawnerTweaks;
@@ -6,7 +7,6 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(ZNetView))]
 public class ComponentPatches
 {
-  static readonly int HashComponent = "override_component".GetStableHashCode();
   static void AddComponent<T>(ZNetView view) where T : MonoBehaviour
   {
     Object.Destroy(view.GetComponent<Interactable>() as MonoBehaviour);
@@ -14,7 +14,7 @@ public class ComponentPatches
   }
   static void HandleComponent(ZNetView view)
   {
-    var str = view.GetZDO().GetString(HashComponent, "").ToLower();
+    var str = view.GetZDO().GetString(Hash.Component, "").ToLower();
     if (str == "") return;
     var values = str.Split(',');
     foreach (var value in values)

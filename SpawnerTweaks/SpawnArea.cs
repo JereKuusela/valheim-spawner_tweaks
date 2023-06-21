@@ -11,40 +11,7 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(SpawnArea))]
 public class SpawnAreaPatches
 {
-  static readonly int SpawnEffect = "override_spawn_effect".GetStableHashCode();
-  // prefab,flags,variant,childTransform|prefab,flags,variant,childTransform|...
-  static readonly int SpawnLegacy = "override_spawn".GetStableHashCode();
-  // prefab,weight,minLevel,maxLevel|prefab,weight,minLevel,maxLevel|...
-  static readonly int Spawn = "override_spawnarea_spawn".GetStableHashCode();
-  // prefab,weight,minLevel,maxLevel|prefab,weight,minLevel,maxLevel|...
-  static readonly int RespawnLegacy = "override_respawn".GetStableHashCode();
-  // float (seconds)
-  static readonly int Respawn = "override_spawnarea_respawn".GetStableHashCode();
-  // float (seconds)
-  static readonly int MaxNear = "override_max_near".GetStableHashCode();
-  // int
-  static readonly int MaxTotal = "override_max_total".GetStableHashCode();
-  // int
-  static readonly int LevelChance = "override_level_chance".GetStableHashCode();
-  // float (percent)
-  static readonly int TriggerDistance = "override_trigger_distance".GetStableHashCode();
-  // float (meters)
-  static readonly int SpawnRadius = "override_spawn_radius".GetStableHashCode();
-  // float (meters)
-  static readonly int NearRadius = "override_near_radius".GetStableHashCode();
-  // float (meters)
-  static readonly int FarRadius = "override_far_radius".GetStableHashCode();
-  // float (meters)
-  static readonly int SpawnCondition = "override_spawn_condition".GetStableHashCode();
-  // flag (1 = day only, 2 = night only, 4 = ground only)
-  static readonly int MinLevel = "override_minimum_level".GetStableHashCode();
-  // int
-  static readonly int MaxLevel = "override_maximum_level".GetStableHashCode();
-  // float (percent)
-  static readonly int Health = "override_health".GetStableHashCode();
-  // float
-  static readonly int Faction = "override_faction".GetStableHashCode();
-  // string
+
 
   [HarmonyPatch(nameof(SpawnArea.Awake)), HarmonyPostfix]
   static void Setup(SpawnArea __instance)
@@ -53,17 +20,17 @@ public class SpawnAreaPatches
     var obj = __instance;
     var view = obj.m_nview;
     if (!view || !view.IsValid()) return;
-    Helper.Float(view, LevelChance, value => obj.m_levelupChance = value);
-    Helper.Float(view, SpawnRadius, value => obj.m_spawnRadius = value);
-    Helper.Float(view, NearRadius, value => obj.m_nearRadius = value);
-    Helper.Float(view, FarRadius, value => obj.m_farRadius = value);
-    Helper.Float(view, TriggerDistance, value => obj.m_triggerDistance = value);
-    Helper.Int(view, MaxNear, value => obj.m_maxNear = value);
-    Helper.Int(view, MaxTotal, value => obj.m_maxTotal = value);
-    Helper.Float(view, Respawn, RespawnLegacy, value => obj.m_spawnIntervalSec = value);
-    Helper.String(view, SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
-    Helper.String(view, Spawn, SpawnLegacy, value => obj.m_prefabs = Helper.ParseSpawnsData(value));
-    Helper.Int(view, SpawnCondition, value => obj.m_onGroundOnly = (value & 4) > 0);
+    Helper.Float(view, Hash.LevelChance, value => obj.m_levelupChance = value);
+    Helper.Float(view, Hash.SpawnRadius, value => obj.m_spawnRadius = value);
+    Helper.Float(view, Hash.NearRadius, value => obj.m_nearRadius = value);
+    Helper.Float(view, Hash.FarRadius, value => obj.m_farRadius = value);
+    Helper.Float(view, Hash.TriggerDistance, value => obj.m_triggerDistance = value);
+    Helper.Int(view, Hash.MaxNear, value => obj.m_maxNear = value);
+    Helper.Int(view, Hash.MaxTotal, value => obj.m_maxTotal = value);
+    Helper.Float(view, Hash.SpawnAreaRespawn, Hash.Respawn, value => obj.m_spawnIntervalSec = value);
+    Helper.String(view, Hash.SpawnEffect, value => obj.m_spawnEffects = Helper.ParseEffects(value));
+    Helper.String(view, Hash.SpawnAreaSpawn, Hash.Spawn, value => obj.m_prefabs = Helper.ParseSpawnsData(value));
+    Helper.Int(view, Hash.SpawnCondition, value => obj.m_onGroundOnly = (value & 4) > 0);
   }
 
   [HarmonyPatch(nameof(SpawnArea.UpdateSpawn)), HarmonyPrefix]
@@ -86,12 +53,12 @@ public class SpawnAreaPatches
     SpawnData = null;
     int? minLevel = null;
     int? maxLevel = null;
-    Helper.Float(__instance.m_nview, Health, value => SpawnHealth = value);
-    Helper.String(__instance.m_nview, Faction, value => SpawnFaction = value);
-    Helper.Int(__instance.m_nview, MinLevel, value => minLevel = value);
-    Helper.Int(__instance.m_nview, MaxLevel, value => maxLevel = value);
+    Helper.Float(__instance.m_nview, Hash.Health, value => SpawnHealth = value);
+    Helper.String(__instance.m_nview, Hash.Faction, value => SpawnFaction = value);
+    Helper.Int(__instance.m_nview, Hash.MinLevel, value => minLevel = value);
+    Helper.Int(__instance.m_nview, Hash.MaxLevel, value => maxLevel = value);
 
-    Helper.String(__instance.m_nview, Spawn, SpawnLegacy, value =>
+    Helper.String(__instance.m_nview, Hash.SpawnAreaSpawn, Hash.Spawn, value =>
     {
       var index = __instance.m_prefabs.IndexOf(__result);
       var split = value.Split('|')[index].Split(',');
@@ -129,8 +96,8 @@ public class SpawnAreaPatches
   static bool CheckTime(SpawnArea __instance)
   {
     if (!Configuration.configSpawnArea.Value) return true;
-    var value = __instance.m_nview.GetZDO().GetInt(SpawnCondition, -1);
-    if (value < 0) return true;
+    var value = __instance.m_nview.GetZDO().GetInt(Hash.SpawnCondition);
+    if (value <= 0) return true;
     if ((value & 1) > 0 && EnvMan.instance.IsNight()) return false;
     if ((value & 2) > 0 && EnvMan.instance.IsDay()) return false;
     return true;
@@ -177,7 +144,7 @@ public class SpawnAreaPatches
     if (Enum.TryParse<Character.Faction>(SpawnFaction, true, out var faction))
     {
       Spawned.m_faction = faction;
-      Spawned.m_nview.GetZDO().Set(Faction, SpawnFaction);
+      Spawned.m_nview.GetZDO().Set(Hash.Faction, SpawnFaction);
     }
     if (SpawnLevel.HasValue)
       Spawned.SetLevel(SpawnLevel.Value);

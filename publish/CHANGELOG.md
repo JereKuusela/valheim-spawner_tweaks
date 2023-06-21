@@ -1,3 +1,6 @@
+- v1.18
+  - Fixes spawn points not working.
+
 - v1.17
   - Fixes some custom data not being loaded.
 
