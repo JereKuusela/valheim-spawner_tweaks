@@ -1,3 +1,6 @@
+- v1.19
+  - Changes the fermenter and smelter components to never be added (since they cause errors).
+
 - v1.18
   - Fixes spawn points not working.
 
