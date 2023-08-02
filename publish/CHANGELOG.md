@@ -1,5 +1,6 @@
 - v1.19
   - Changes the fermenter and smelter components to never be added (since they cause errors).
+  - Changes data to work with unhashes object ids.
 
 - v1.18
   - Fixes spawn points not working.

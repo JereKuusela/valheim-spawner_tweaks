@@ -36,12 +36,12 @@ public class Helper
   public static GameObject? GetPrefab(string hashStr)
   {
     if (int.TryParse(hashStr, out var hash)) return GetPrefab(hash);
-    return null;
+    return GetPrefab(hashStr.GetStableHashCode());
   }
   public static ItemDrop? GetItem(string hashStr)
   {
     if (int.TryParse(hashStr, out var hash)) return GetItem(hash);
-    return null;
+    return GetItem(hashStr.GetStableHashCode());
   }
   public static ItemDrop? GetItem(int hash)
   {
@@ -50,7 +50,7 @@ public class Helper
   public static GameObject? GetAttack(string hashStr)
   {
     if (int.TryParse(hashStr, out var hash)) return GetAttack(hash);
-    return null;
+    return GetAttack(hashStr.GetStableHashCode());
   }
   public static GameObject GetAttack(int hash)
   {
