@@ -31,7 +31,7 @@ public class OfferingBowlPatches
     Helper.Int(view, Hash.Amount, value =>
     {
       obj.m_bossItems = value;
-      obj.m_useItemStands = value == 0;
+      obj.m_useItemStands = value < 0;
     });
   static void SetDelay(OfferingBowl obj, ZNetView view) =>
     Helper.Float(view, Hash.Delay, value => obj.m_spawnBossDelay = value);
