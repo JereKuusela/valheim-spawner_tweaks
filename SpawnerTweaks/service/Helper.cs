@@ -318,6 +318,8 @@ public class Helper
   {
     if (view == null || !view.IsValid()) return false;
     var value = view.GetZDO().GetInt(hash);
+    if (value == 0)
+      value = view.GetZDO().GetString(hash).GetStableHashCode();
     var prefab = GetPrefab(value);
     if (prefab == null) return false;
     action(prefab);
@@ -333,6 +335,8 @@ public class Helper
   {
     if (view == null || !view.IsValid()) return;
     var value = view.GetZDO().GetInt(hash);
+    if (value == 0)
+      value = view.GetZDO().GetString(hash).GetStableHashCode();
     var item = GetItem(value);
     if (item == null) return;
     action(item);

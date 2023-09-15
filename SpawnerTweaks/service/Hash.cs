@@ -5,7 +5,9 @@ public static class Hash
   public static readonly int MaxAmount = "override_maximum_amount".GetStableHashCode();
   // int
   public static readonly int Spawn = "override_spawn".GetStableHashCode();
-  // int (hash)
+  // int
+  public static readonly int Command = "override_command".GetStableHashCode();
+  // string
   public static readonly int Biome = "override_biome".GetStableHashCode();
   // int (biome)
   public static readonly int Speed = "override_speed".GetStableHashCode();

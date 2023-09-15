@@ -4,18 +4,18 @@ Changes the game logic to allow modifying altars, chests, item stands, pickables
 
 Install on all clients and on the server (modding [guide](https://youtu.be/L9ljm2eKLrk)).
 
-# Usage
+## Usage
 
 This mod only provides game logic.
 
 To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.io/package/JereKuusela/World_Edit_Commands/).
 
-# Tutorials
+## Tutorials
 
-- World Edit basic usage: https://youtu.be/Bwkb3XadSl0 (28 minutes, created by StonedProphet)
-- World Edit Spawner Tweaks: https://youtu.be/mS59BMvR5vY (22 minutes, created by StonedProphet)
+- World Edit basic usage: <https://youtu.be/Bwkb3XadSl0> (28 minutes, created by StonedProphet)
+- World Edit Spawner Tweaks: <https://youtu.be/mS59BMvR5vY> (22 minutes, created by StonedProphet)
 
-# Config
+## Config
 
 - Components: Altars, pickables, spawn points and spawners can be attached to any object.
 - Boss altars: Boss altar properties can be overridden.
@@ -28,7 +28,7 @@ To modify behavior, you need [World Edit Commands](https://valheim.thunderstore.
 - No spawn point suppression (one time): One time spawn points can't be suppressed with player base structures (even if configured to be respawning).
 - No spawn point suppression (respawning): Respawning spawn points can't be suppressed with player base structures (even if configured to be one time). This is off by default because it can affect vanilla game play.
 
-# Credits
+## Credits
 
 Thanks for Azumatt for creating the mod icon!
 

@@ -108,10 +108,47 @@ public class OfferingBowlPatches
   }
 
   [HarmonyPatch(nameof(OfferingBowl.Interact)), HarmonyPrefix]
-  static bool CheckBossRespawn(OfferingBowl __instance) => CanRespawn(__instance);
+  static bool CheckBossRespawn(OfferingBowl __instance, bool hold, ref bool __result)
+  {
+    if (!CanRespawn(__instance)) return false;
+    if (hold || __instance.IsBossSpawnQueued() || !__instance.m_useItemStands) return true;
+    if (__instance.m_bossPrefab) return true;
+    var view = __instance.GetComponentInParent<ZNetView>();
+    var result = false;
+    Helper.String(view, Hash.Command, value =>
+    {
+      ServerExecution.Send(value, __instance.transform.position, __instance.transform.rotation.eulerAngles);
+      result = true;
+    });
+    __result = result;
+    return false;
+  }
 
   [HarmonyPatch(nameof(OfferingBowl.UseItem)), HarmonyPrefix]
   static bool CheckItemRespawn(OfferingBowl __instance) => CanRespawn(__instance);
+  [HarmonyPatch(nameof(OfferingBowl.UseItem)), HarmonyPostfix]
+  static bool UseItem(bool result, ItemDrop.ItemData item, Humanoid user, OfferingBowl __instance)
+  {
+    if (!result) return result;
+    var obj = __instance;
+    if (obj.m_bossPrefab || obj.m_itemPrefab) return result;
+    // Vanilla checks.
+    if (obj.IsBossSpawnQueued()) return result;
+    if (!obj.m_bossItem) return result;
+    if (item.m_shared.m_name != obj.m_bossItem.m_itemData.m_shared.m_name) return result;
+    int num = user.GetInventory().CountItems(obj.m_bossItem.m_itemData.m_shared.m_name, -1, true);
+    if (num < obj.m_bossItems) return result;
+    var view = obj.GetComponentInParent<ZNetView>();
+    Helper.String(view, Hash.Command, value =>
+    {
+      user.GetInventory().RemoveItem(item.m_shared.m_name, obj.m_bossItems, -1, true);
+      user.ShowRemovedMessage(obj.m_bossItem.m_itemData, obj.m_bossItems);
+      user.Message(MessageHud.MessageType.Center, "$msg_offerdone", 0, null);
+      if (obj.m_itemSpawnPoint) obj.m_fuelAddedEffects.Create(obj.m_itemSpawnPoint.position, obj.transform.rotation, null, 1f, -1);
+      ServerExecution.Send(value, __instance.transform.position, __instance.transform.rotation.eulerAngles);
+    });
+    return result;
+  }
 
   [HarmonyPatch(nameof(OfferingBowl.SpawnBoss)), HarmonyPostfix]
   static void SetSpawnTime(OfferingBowl __instance, bool __result)
@@ -174,7 +211,33 @@ public class OfferingBowlPatches
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
       .InstructionEnumeration();
   }
+
+
+  [HarmonyPatch(nameof(OfferingBowl.SpawnItem)), HarmonyPostfix]
+  public static bool SpawnItem(bool result, OfferingBowl __instance)
+  {
+    if (result)
+    {
+      var view = __instance.GetComponentInParent<ZNetView>();
+      Helper.String(view, Hash.Command, value =>
+      {
+        ServerExecution.Send(value, __instance.transform.position, __instance.transform.rotation.eulerAngles);
+      });
+    }
+    return result;
+  }
+  [HarmonyPatch(nameof(OfferingBowl.DelayedSpawnBoss)), HarmonyPostfix]
+  public static void DelayedSpawnBoss(OfferingBowl __instance)
+  {
+    var view = __instance.GetComponentInParent<ZNetView>();
+    Helper.String(view, Hash.Command, value =>
+    {
+      ServerExecution.Send(value, __instance.m_bossSpawnPoint, __instance.transform.rotation.eulerAngles);
+    });
+  }
 }
+
+
 
 [HarmonyPatch(typeof(LocationProxy), nameof(LocationProxy.SpawnLocation))]
 public class UpdateOfferingBowls
