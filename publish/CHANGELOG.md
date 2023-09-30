@@ -1,3 +1,6 @@
+- v1.22
+  - Fixes spawn point spawn override not working.
+
 - v1.21
   - Adds support for executing commands on altar trigger.
 

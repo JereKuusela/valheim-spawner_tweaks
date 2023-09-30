@@ -11,15 +11,6 @@ namespace SpawnerTweaks;
 public class CreatureSpawnerPatches
 {
 
-  static void HandleSpawn(CreatureSpawner obj)
-  {
-    var hash = obj.m_nview.GetZDO().GetInt(Hash.Spawn, 0);
-    if (hash == 0) return;
-    var prefab = ZNetScene.instance.GetPrefab(hash);
-    if (!prefab) return;
-    obj.m_creaturePrefab = prefab;
-  }
-
   // CLLC patches the same thing. Lower priority to override it.
   [HarmonyPatch(nameof(CreatureSpawner.Awake)), HarmonyPostfix, HarmonyPriority(Priority.LowerThanNormal)]
   static void Setup(CreatureSpawner __instance)
@@ -29,7 +20,7 @@ public class CreatureSpawnerPatches
     var view = obj.m_nview;
     if (!view || !view.IsValid()) return;
     Helper.Float(view, Hash.Respawn, value => obj.m_respawnTimeMinuts = value);
-    HandleSpawn(__instance);
+    Helper.Prefab(view, Hash.Spawn, value => obj.m_creaturePrefab = value);
     Helper.Int(view, Hash.MaxLevel, value => obj.m_maxLevel = value);
     Helper.Int(view, Hash.MinLevel, value => obj.m_minLevel = value);
     Helper.Int(view, Hash.SpawnCondition, value =>
