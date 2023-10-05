@@ -1,9 +1,9 @@
 {
   "name": "Spawner_Tweaks",
-  "version_number": "1.22.0",
+  "version_number": "1.23.0",
   "website_url": "https://github.com/JereKuusela/valheim-spawner_tweaks",
   "description": "Changes the game logic to allow modifying altar, pickable, spawn point and spawner behavior.",
   "dependencies": [
-    "denikson-BepInExPack_Valheim-5.4.2105"
+    "denikson-BepInExPack_Valheim-5.4.2200"
   ]
 }
