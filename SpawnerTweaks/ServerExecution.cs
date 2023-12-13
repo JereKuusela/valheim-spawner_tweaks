@@ -43,7 +43,13 @@ public class ServerExecution
         .Replace("$$z", center.z.ToString(NumberFormatInfo.InvariantInfo))
         .Replace("$$i", zone.x.ToString(NumberFormatInfo.InvariantInfo))
         .Replace("$$j", zone.y.ToString(NumberFormatInfo.InvariantInfo))
-        .Replace("$$a", rot.y.ToString(NumberFormatInfo.InvariantInfo));
+        .Replace("$$a", rot.y.ToString(NumberFormatInfo.InvariantInfo))
+        .Replace("<x>", center.x.ToString(NumberFormatInfo.InvariantInfo))
+        .Replace("<y>", center.y.ToString(NumberFormatInfo.InvariantInfo))
+        .Replace("<z>", center.z.ToString(NumberFormatInfo.InvariantInfo))
+        .Replace("<i>", zone.x.ToString(NumberFormatInfo.InvariantInfo))
+        .Replace("<j>", zone.y.ToString(NumberFormatInfo.InvariantInfo))
+        .Replace("<a>", rot.y.ToString(NumberFormatInfo.InvariantInfo));
 
     var expressions = cmd.Split(' ').Select(s => s.Split('=')).Select(a => a[a.Length - 1].Trim()).SelectMany(s => s.Split(',')).ToArray();
     foreach (var expression in expressions)

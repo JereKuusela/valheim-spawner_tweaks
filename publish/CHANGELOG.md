@@ -1,4 +1,5 @@
 - v1.24
+  - Changes the command parameter format from $$ to <> (old format still supported).
   - Fixes compatibility with Expand World Factions.
 
 - v1.23
