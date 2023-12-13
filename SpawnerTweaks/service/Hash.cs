@@ -37,7 +37,8 @@ public static class Hash
   // string
   public static readonly int Name = "override_name".GetStableHashCode();
   // string
-  public static readonly int Faction = "override_faction".GetStableHashCode();
+  public static readonly int FactionLegacy = "override_faction".GetStableHashCode();
+  public static readonly int Faction = "faction".GetStableHashCode();
   // string
   public static readonly int Boss = "override_boss".GetStableHashCode();
   // int (-1 false, 0 default, 1 true)

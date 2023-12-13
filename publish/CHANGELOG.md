@@ -1,3 +1,6 @@
+- v1.24
+  - Fixes compatibility with Expand World Factions.
+
 - v1.23
   - Fixed for the new update.
 
@@ -9,7 +12,3 @@
 
 - v1.20
   - Fixed for the new update.
-
-- v1.19
-  - Changes the fermenter and smelter components to never be added (since they cause errors).
-  - Changes data to work with unhashes object ids.

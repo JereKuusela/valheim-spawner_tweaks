@@ -14,7 +14,7 @@ public class CharacterPatches
   static void Setup(Character __instance)
   {
     if (!Configuration.configCharacter.Value) return;
-    Helper.String(__instance.m_nview, Hash.Faction, value =>
+    Helper.String(__instance.m_nview, Hash.Faction, Hash.FactionLegacy, value =>
     {
       if (Enum.TryParse<Character.Faction>(value, true, out var faction))
         __instance.m_faction = faction;

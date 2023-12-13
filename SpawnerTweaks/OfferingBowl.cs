@@ -183,7 +183,7 @@ public class OfferingBowlPatches
     var level = Helper.RollLevel(minLevel, maxLevel, levelChance);
     if (level > 1) obj.SetLevel(level);
     Helper.Float(view, Hash.Health, obj.SetMaxHealth);
-    Helper.String(view, Hash.Faction, value =>
+    Helper.String(view, Hash.Faction, Hash.FactionLegacy, value =>
     {
       obj.m_nview.GetZDO().Set(Hash.Faction, value);
       if (Enum.TryParse<Character.Faction>(value, true, out var faction))

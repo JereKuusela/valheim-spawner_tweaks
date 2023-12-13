@@ -122,7 +122,7 @@ public class SpawnAreaPatches
   {
     if (SpawnData != null)
       DataHelper.InitZDO(prefab, position, rotation, SpawnData);
-    var obj = UnityEngine.Object.Instantiate<GameObject>(prefab, position, rotation);
+    var obj = UnityEngine.Object.Instantiate(prefab, position, rotation);
     return obj;
   }
 
@@ -141,7 +141,7 @@ public class SpawnAreaPatches
   static void ApplyChanges()
   {
     if (Spawned == null) return;
-    if (Enum.TryParse<Character.Faction>(SpawnFaction, true, out var faction))
+    if (SpawnFaction != null && Enum.TryParse<Character.Faction>(SpawnFaction, true, out var faction))
     {
       Spawned.m_faction = faction;
       Spawned.m_nview.GetZDO().Set(Hash.Faction, SpawnFaction);

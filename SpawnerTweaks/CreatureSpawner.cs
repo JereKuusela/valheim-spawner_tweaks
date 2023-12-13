@@ -59,7 +59,7 @@ public class CreatureSpawnerPatches
     OverrideLevel(__instance, obj);
     var view = __instance.m_nview;
     Helper.Float(view, Hash.Health, obj.SetMaxHealth);
-    Helper.String(view, Hash.Faction, value =>
+    Helper.String(view, Hash.Faction, Hash.FactionLegacy, value =>
     {
       obj.m_nview.GetZDO().Set(Hash.Faction, value);
       if (Enum.TryParse<Character.Faction>(value, true, out var faction))
