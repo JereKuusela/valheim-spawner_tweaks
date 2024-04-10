@@ -52,7 +52,7 @@ public class OfferingBowlPatches
       obj.m_itemstandMaxRange = value;
     });
   static void SetSpawnOffset(OfferingBowl obj, ZNetView view) =>
-    Helper.Float(view, Hash.SpawnOffset, value => obj.m_spawnOffset = value);
+    Helper.Float(view, Hash.SpawnOffset, value => obj.m_spawnYOffset = value);
   static void SetSpawnRadius(OfferingBowl obj, ZNetView view) =>
     Helper.Float(view, Hash.SpawnRadius, value => obj.m_spawnBossMaxDistance = value);
   static void SetSpawnMaxY(OfferingBowl obj, ZNetView view) =>
@@ -151,9 +151,8 @@ public class OfferingBowlPatches
   }
 
   [HarmonyPatch(nameof(OfferingBowl.SpawnBoss)), HarmonyPostfix]
-  static void SetSpawnTime(OfferingBowl __instance, bool __result)
+  static void SetSpawnTime(OfferingBowl __instance)
   {
-    if (!__result) return;
     var view = __instance.GetComponentInParent<ZNetView>();
     if (!view) return;
     view.GetZDO().Set(Hash.SpawnTime, ZNet.instance.GetTime().Ticks);

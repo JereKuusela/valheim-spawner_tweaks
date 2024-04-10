@@ -1,3 +1,6 @@
+- v1.25
+  - Fixed for the new game version.
+
 - v1.24
   - Changes the command parameter format from $$ to <> (old format still supported).
   - Fixes compatibility with Expand World Factions.
