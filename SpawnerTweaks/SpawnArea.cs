@@ -98,8 +98,8 @@ public class SpawnAreaPatches
     if (!Configuration.configSpawnArea.Value) return true;
     var value = __instance.m_nview.GetZDO().GetInt(Hash.SpawnCondition);
     if (value <= 0) return true;
-    if ((value & 1) > 0 && EnvMan.instance.IsNight()) return false;
-    if ((value & 2) > 0 && EnvMan.instance.IsDay()) return false;
+    if ((value & 1) > 0 && EnvMan.IsNight()) return false;
+    if ((value & 2) > 0 && EnvMan.IsDay()) return false;
     return true;
   }
 

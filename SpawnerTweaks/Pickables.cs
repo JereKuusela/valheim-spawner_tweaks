@@ -91,9 +91,9 @@ public static class PickableExtensions
     if (picked) return;
     Helper.Int(view, SpawnCondition, value =>
     {
-      if (value == 1 && EnvMan.instance.IsNight())
+      if (value == 1 && EnvMan.IsNight())
         picked = true;
-      if (value == 2 && EnvMan.instance.IsDay())
+      if (value == 2 && EnvMan.IsDay())
         picked = true;
     });
     if (!picked)

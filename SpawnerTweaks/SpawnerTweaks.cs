@@ -4,11 +4,11 @@ using Service;
 
 namespace SpawnerTweaks;
 [BepInPlugin(GUID, NAME, VERSION)]
-public class Plugin : BaseUnityPlugin
+public class SpawnerTweaksPlugin : BaseUnityPlugin
 {
   const string GUID = "spawner_tweaks";
   const string NAME = "Spawner Tweaks";
-  const string VERSION = "1.26";
+  const string VERSION = "1.27";
   public static ServerSync.ConfigSync ConfigSync = new(GUID)
   {
     DisplayName = NAME,
