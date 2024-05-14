@@ -21,7 +21,7 @@ public class Configuration
   public static void Init(ConfigWrapper wrapper)
   {
     var section = "1. General";
-    configNoCreatureSpawnerSuppression = wrapper.Bind(section, "No spawn point suppression (one time)", true, "One time spawn points can't be suppressed with player base (even when configured to respawn).");
+    configNoCreatureSpawnerSuppression = wrapper.Bind(section, "No spawn point suppression (one time)", false, "One time spawn points can't be suppressed with player base (even when configured to respawn).");
     configNoCreatureSpawnerSuppression.SettingChanged += (s, e) => NoSuppression.Update();
     configNoCreatureRespawnerSuppression = wrapper.Bind(section, "No spawn point suppression (respawning)", false, "Respawning spawn points can't be suppressed with player base (even when configured to one time).");
     configNoCreatureRespawnerSuppression.SettingChanged += (s, e) => NoSuppression.Update();
