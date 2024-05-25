@@ -207,7 +207,7 @@ public class OfferingBowlPatches
       .MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.SetPatrolPoint))))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Call, Transpilers.EmitDelegate(SetupSpawn).operand))
-      .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
+      .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_1))
       .InstructionEnumeration();
   }
 

@@ -12,7 +12,7 @@ public class PickablePatches
   static void SetSpawn(Pickable obj, ZNetView view) =>
     Helper.Prefab(view, Hash.PickableSpawn, Hash.Spawn, value => obj.m_itemPrefab = value);
   static void SetRespawn(Pickable obj, ZNetView view) =>
-    Helper.Float(view, Hash.PickableRespawn, Hash.Respawn, value => obj.m_respawnTimeMinutes = (int)value);
+    Helper.Float(view, Hash.PickableRespawn, Hash.Respawn, value => obj.m_respawnTimeMinutes = value);
   static void SetAmount(Pickable obj, ZNetView view) =>
     Helper.Int(view, Hash.Amount, value => obj.m_amount = value);
   static void SetName(Pickable obj, ZNetView view) =>

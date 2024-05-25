@@ -8,7 +8,7 @@ public class SpawnerTweaksPlugin : BaseUnityPlugin
 {
   const string GUID = "spawner_tweaks";
   const string NAME = "Spawner Tweaks";
-  const string VERSION = "1.27";
+  const string VERSION = "1.28";
   public static ServerSync.ConfigSync ConfigSync = new(GUID)
   {
     DisplayName = NAME,
