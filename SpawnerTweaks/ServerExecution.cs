@@ -36,7 +36,7 @@ public class ServerExecution
   }
   private static string Parse(string command, Vector3 center, Vector3 rot)
   {
-    var zone = ZoneSystem.instance.GetZone(center);
+    var zone = ZoneSystem.GetZone(center);
     var cmd = command
         .Replace("$$x", center.x.ToString(NumberFormatInfo.InvariantInfo))
         .Replace("$$y", center.y.ToString(NumberFormatInfo.InvariantInfo))

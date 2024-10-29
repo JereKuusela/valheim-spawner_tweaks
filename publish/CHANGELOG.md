@@ -1,3 +1,6 @@
+- v1.29
+  - Fixed for the new game version.
+
 - v1.28
   - Fixed for the new game version.
 
