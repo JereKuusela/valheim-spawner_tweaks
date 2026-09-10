@@ -17,7 +17,7 @@ public class ConfigWrapper
     ConfigFile = configFile;
     ConfigSync = configSync;
 
-    new Terminal.ConsoleCommand(command, "[key] [value] - Toggles or sets a config value.", (Terminal.ConsoleEventArgs args) =>
+    new Terminal.ConsoleCommand(command, "[key] [value] - Toggles or sets a config value.", args =>
     {
       if (args.Length < 2) return;
       if (!SettingHandlers.TryGetValue(args[1].ToLower(), out var handler)) return;

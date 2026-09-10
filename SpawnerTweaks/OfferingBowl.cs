@@ -6,6 +6,7 @@ using Service;
 using UnityEngine;
 
 namespace SpawnerTweaks;
+
 [HarmonyPatch(typeof(OfferingBowl))]
 public class OfferingBowlPatches
 {
@@ -200,9 +201,14 @@ public class OfferingBowlPatches
   [HarmonyPatch(nameof(OfferingBowl.DelayedSpawnBoss)), HarmonyTranspiler]
   static IEnumerable<CodeInstruction> SetData(IEnumerable<CodeInstruction> instructions)
   {
+    var instantiator = AccessTools.FirstMethod(typeof(UnityEngine.Object), info => info.Name == nameof(UnityEngine.Object.Instantiate) && info.IsGenericMethodDefinition &&
+            info.GetParameters().Length == 3 &&
+            info.GetParameters()[1].ParameterType == typeof(Vector3) &&
+            info.GetParameters()[2].ParameterType == typeof(Quaternion))
+      .MakeGenericMethod(typeof(GameObject));
+
     return new CodeMatcher(instructions)
-      .MatchForward(false, new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(OfferingBowl), nameof(OfferingBowl.m_bossSpawnPoint))))
-      .Advance(2)
+      .MatchForward(false, new CodeMatch(OpCodes.Call, instantiator))
       .Set(OpCodes.Call, Transpilers.EmitDelegate(Instantiate).operand)
       .MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.SetPatrolPoint))))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
