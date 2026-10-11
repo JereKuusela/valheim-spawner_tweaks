@@ -1,8 +1,8 @@
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
-using System.Reflection.Emit;
 using HarmonyLib;
 using Service;
+using UnityEngine;
 
 namespace SpawnerTweaks;
 
@@ -47,15 +47,18 @@ public class PickablePatches
     Helper.String(view, Hash.RequiredGlobalKey, value => checkPickable = true);
     Helper.String(view, Hash.ForbiddenGlobalKey, value => checkPickable = true);
     if (checkPickable)
-      __instance.InvokeRepeating("CheckCondition", UnityEngine.Random.Range(1f, 5f), 30f);
+      __instance.StartCoroutine(ConditionLoop(__instance));
   }
-
-  private static void SetStack(ItemDrop obj, int amount) => obj?.SetStack(amount);
-  [HarmonyPatch(nameof(Pickable.Drop)), HarmonyTranspiler]
-  static IEnumerable<CodeInstruction> SetStackAmount(IEnumerable<CodeInstruction> instructions)
+  // InvokeRepeating can't find extension methods by name.
+  static IEnumerator ConditionLoop(Pickable obj)
   {
-    return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ItemDrop), nameof(ItemDrop.SetStack))))
-      .Set(OpCodes.Call, Transpilers.EmitDelegate(SetStack).operand).InstructionEnumeration();
+    yield return new WaitForSeconds(Random.Range(1f, 5f));
+    var wait = new WaitForSeconds(30f);
+    while (true)
+    {
+      obj.CheckCondition();
+      yield return wait;
+    }
   }
 
   [HarmonyPatch(nameof(Pickable.GetHoverName)), HarmonyPrefix]

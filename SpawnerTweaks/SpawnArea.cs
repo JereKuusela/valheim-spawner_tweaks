@@ -95,6 +95,7 @@ public class SpawnAreaPatches
   [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyPrefix]
   static bool CheckTime(SpawnArea __instance)
   {
+    Spawned = null;
     if (!Configuration.configSpawnArea.Value) return true;
     var value = __instance.m_nview.GetZDO().GetInt(Hash.SpawnCondition);
     if (value <= 0) return true;
@@ -113,6 +114,7 @@ public class SpawnAreaPatches
   [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyTranspiler]
   static IEnumerable<CodeInstruction> FixCenterPoint(IEnumerable<CodeInstruction> instructions)
   {
+    // Local 4 is the spawned GameObject.
     return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.GetCenterPoint))))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, 4))
       .Set(OpCodes.Call, Transpilers.EmitDelegate(GetCenterPoint).operand).InstructionEnumeration();
@@ -122,16 +124,19 @@ public class SpawnAreaPatches
   {
     if (SpawnData != null)
       DataHelper.InitZDO(prefab, position, rotation, SpawnData);
-    var obj = UnityEngine.Object.Instantiate(prefab, position, rotation);
-    return obj;
+    return UnityEngine.Object.Instantiate(prefab, position, rotation);
   }
 
   [HarmonyPatch(nameof(SpawnArea.SpawnOne)), HarmonyTranspiler]
   static IEnumerable<CodeInstruction> SetData(IEnumerable<CodeInstruction> instructions)
   {
+    var instantiator = AccessTools.FirstMethod(typeof(UnityEngine.Object), info => info.Name == nameof(UnityEngine.Object.Instantiate) && info.IsGenericMethodDefinition &&
+            info.GetParameters().Length == 3 &&
+            info.GetParameters()[1].ParameterType == typeof(Vector3) &&
+            info.GetParameters()[2].ParameterType == typeof(Quaternion))
+      .MakeGenericMethod(typeof(GameObject));
     return new CodeMatcher(instructions)
-      .MatchForward(false, new CodeMatch(OpCodes.Ldc_I4, 360))
-      .Advance(5)
+      .MatchForward(false, new CodeMatch(OpCodes.Call, instantiator))
       .Set(OpCodes.Call, Transpilers.EmitDelegate(Instantiate).operand)
       .InstructionEnumeration();
   }

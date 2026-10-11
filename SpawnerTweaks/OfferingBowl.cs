@@ -10,6 +10,8 @@ namespace SpawnerTweaks;
 [HarmonyPatch(typeof(OfferingBowl))]
 public class OfferingBowlPatches
 {
+  static GameObject? commandOnlyPrefab;
+  static GameObject CommandOnlyPrefab => commandOnlyPrefab ??= new GameObject("SpawnerTweaksCommandOnly") { hideFlags = HideFlags.HideAndDontSave };
   static void SetSpawn(OfferingBowl obj, ZNetView view) =>
     Helper.Prefab(view, Hash.Spawn, value =>
     {
@@ -75,6 +77,9 @@ public class OfferingBowlPatches
     var view = __instance.GetComponentInParent<ZNetView>();
     if (!view || !view.IsValid()) return;
     SetSpawn(__instance, view);
+    // Lets vanilla run its full flow (stands, items, delay) for bowls that only run a command.
+    if (!__instance.m_bossPrefab && !__instance.m_itemPrefab)
+      Helper.String(view, Hash.Command, _ => __instance.m_bossPrefab = CommandOnlyPrefab);
     SetAmount(__instance, view);
     SetSpawnItem(__instance, view);
     SetName(__instance, view);
@@ -109,69 +114,37 @@ public class OfferingBowlPatches
   }
 
   [HarmonyPatch(nameof(OfferingBowl.Interact)), HarmonyPrefix]
-  static bool CheckBossRespawn(OfferingBowl __instance, bool hold, ref bool __result)
-  {
-    if (!CanRespawn(__instance)) return false;
-    if (hold || __instance.IsBossSpawnQueued() || !__instance.m_useItemStands) return true;
-    if (__instance.m_bossPrefab) return true;
-    var view = __instance.GetComponentInParent<ZNetView>();
-    var result = false;
-    Helper.String(view, Hash.Command, value =>
-    {
-      ServerExecution.Send(value, __instance.transform.position, __instance.transform.rotation.eulerAngles);
-      result = true;
-    });
-    __result = result;
-    return false;
-  }
+  static bool CheckBossRespawn(OfferingBowl __instance) => CanRespawn(__instance);
 
   [HarmonyPatch(nameof(OfferingBowl.UseItem)), HarmonyPrefix]
   static bool CheckItemRespawn(OfferingBowl __instance) => CanRespawn(__instance);
-  [HarmonyPatch(nameof(OfferingBowl.UseItem)), HarmonyPostfix]
-  static bool UseItem(bool result, ItemDrop.ItemData item, Humanoid user, OfferingBowl __instance)
-  {
-    if (!result) return result;
-    var obj = __instance;
-    if (obj.m_bossPrefab || obj.m_itemPrefab) return result;
-    // Vanilla checks.
-    if (obj.IsBossSpawnQueued()) return result;
-    if (!obj.m_bossItem) return result;
-    if (item.m_shared.m_name != obj.m_bossItem.m_itemData.m_shared.m_name) return result;
-    int num = user.GetInventory().CountItems(obj.m_bossItem.m_itemData.m_shared.m_name, -1, true);
-    if (num < obj.m_bossItems) return result;
-    var view = obj.GetComponentInParent<ZNetView>();
-    Helper.String(view, Hash.Command, value =>
-    {
-      user.GetInventory().RemoveItem(item.m_shared.m_name, obj.m_bossItems, -1, true);
-      user.ShowRemovedMessage(obj.m_bossItem.m_itemData, obj.m_bossItems);
-      user.Message(MessageHud.MessageType.Center, "$msg_offerdone", 0, null);
-      if (obj.m_itemSpawnPoint) obj.m_fuelAddedEffects.Create(obj.m_itemSpawnPoint.position, obj.transform.rotation, null, 1f, -1);
-      ServerExecution.Send(value, __instance.transform.position, __instance.transform.rotation.eulerAngles);
-    });
-    return result;
-  }
 
   [HarmonyPatch(nameof(OfferingBowl.SpawnBoss)), HarmonyPostfix]
-  static void SetSpawnTime(OfferingBowl __instance)
+  static void SetSpawnTime(OfferingBowl __instance) => MarkSpawnTime(__instance);
+  static void MarkSpawnTime(OfferingBowl bowl)
   {
-    var view = __instance.GetComponentInParent<ZNetView>();
-    if (!view) return;
+    var view = bowl.GetComponentInParent<ZNetView>();
+    if (!view || !view.IsValid()) return;
     view.GetZDO().Set(Hash.SpawnTime, ZNet.instance.GetTime().Ticks);
   }
 
   private static ZPackage? SpawnData = null;
 
   [HarmonyPatch(nameof(OfferingBowl.DelayedSpawnBoss)), HarmonyPrefix]
-  static void GetValues(OfferingBowl __instance)
+  static bool GetValues(OfferingBowl __instance)
   {
     SpawnData = null;
     var view = __instance.GetComponentInParent<ZNetView>();
     Helper.String(view, Hash.Data, value => SpawnData = DataHelper.Deserialize(value));
+    // Command-only bowls have nothing to instantiate.
+    return __instance.m_bossPrefab != CommandOnlyPrefab;
   }
-  static void SetupSpawn(BaseAI baseAI, OfferingBowl bowl)
+  [HarmonyPatch(nameof(OfferingBowl.DelayedSpawnBoss)), HarmonyFinalizer]
+  static void ClearValues() => SpawnData = null;
+  static void SetupSpawn(GameObject spawn, OfferingBowl bowl)
   {
     if (!Configuration.configOfferingBowl.Value) return;
-    var obj = baseAI.GetComponent<Character>();
+    var obj = spawn.GetComponent<Character>();
     if (!obj) return;
     var view = bowl.GetComponentInParent<ZNetView>();
     var levelChance = 10f;
@@ -190,11 +163,12 @@ public class OfferingBowlPatches
         obj.m_faction = faction;
     });
   }
-  static GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation)
+  static GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, OfferingBowl bowl)
   {
     if (SpawnData != null)
       DataHelper.InitZDO(prefab, position, rotation, SpawnData);
     var obj = UnityEngine.Object.Instantiate(prefab, position, rotation);
+    SetupSpawn(obj, bowl);
     return obj;
   }
 
@@ -209,11 +183,8 @@ public class OfferingBowlPatches
 
     return new CodeMatcher(instructions)
       .MatchForward(false, new CodeMatch(OpCodes.Call, instantiator))
-      .Set(OpCodes.Call, Transpilers.EmitDelegate(Instantiate).operand)
-      .MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.SetPatrolPoint))))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
-      .InsertAndAdvance(new CodeInstruction(OpCodes.Call, Transpilers.EmitDelegate(SetupSpawn).operand))
-      .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_1))
+      .Set(OpCodes.Call, Transpilers.EmitDelegate(Instantiate).operand)
       .InstructionEnumeration();
   }
 
@@ -223,6 +194,7 @@ public class OfferingBowlPatches
   {
     if (result)
     {
+      MarkSpawnTime(__instance);
       var view = __instance.GetComponentInParent<ZNetView>();
       Helper.String(view, Hash.Command, value =>
       {

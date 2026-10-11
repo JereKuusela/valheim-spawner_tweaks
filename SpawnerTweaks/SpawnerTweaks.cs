@@ -7,9 +7,9 @@ namespace SpawnerTweaks;
 [BepInPlugin(GUID, NAME, VERSION)]
 public class SpawnerTweaksPlugin : BaseUnityPlugin
 {
-  const string GUID = "spawner_tweaks";
-  const string NAME = "Spawner Tweaks";
-  const string VERSION = "1.30";
+  public const string GUID = "spawner_tweaks";
+  public const string NAME = "Spawner Tweaks";
+  public const string VERSION = "1.31";
   public static ServerSync.ConfigSync ConfigSync = new(GUID)
   {
     DisplayName = NAME,

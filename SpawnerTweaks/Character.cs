@@ -30,27 +30,33 @@ public class CharacterPatches
       {
         var sets = Helper.ParseCharacterItemSets(value);
         if (sets.Length == 0) return;
-        humanoid.m_randomWeapon = new GameObject[0];
-        humanoid.m_randomShield = new GameObject[0];
-        Console.instance.AddString($"SpawnerTweaks: {__instance.m_name} has {sets.Length} item sets");
+        humanoid.m_randomWeapon = [];
+        humanoid.m_randomShield = [];
         if (sets.Length == 1)
         {
-          humanoid.m_randomSets = new Humanoid.ItemSet[0];
+          humanoid.m_randomSets = [];
           humanoid.m_defaultItems = sets[0].m_items;
         }
         else
         {
           humanoid.m_randomSets = sets;
-          humanoid.m_defaultItems = new GameObject[0];
+          humanoid.m_defaultItems = [];
         }
       });
     }
+  }
+
+  // Vanilla recalculates max health on every load, wiping custom values. Keep stored ones.
+  static void SetupMaxHealth(Character obj)
+  {
+    if (Configuration.configCharacter.Value && obj.m_nview.GetZDO().GetFloat(ZDOVars.s_maxHealth, 0f) > 0f) return;
+    obj.SetupMaxHealth();
   }
 
   [HarmonyPatch(nameof(Character.Awake)), HarmonyTranspiler]
   static IEnumerable<CodeInstruction> DisableMaxHealthSetup(IEnumerable<CodeInstruction> instructions)
   {
     return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Character), nameof(Character.SetupMaxHealth))))
-      .Set(OpCodes.Call, Transpilers.EmitDelegate((Character _) => { }).operand).InstructionEnumeration();
+      .Set(OpCodes.Call, Transpilers.EmitDelegate(SetupMaxHealth).operand).InstructionEnumeration();
   }
 }
